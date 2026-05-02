@@ -1,0 +1,54 @@
+---
+name: code
+description: "{% if stack == 'python' %}Python language standards: type hints, error handling, logging, and style conventions.{% elif stack == 'node' %}TypeScript/JavaScript standards: types, exports, and functional patterns.{% elif stack == 'go' %}Go language standards: error handling, interfaces, and test conventions.{% else %}{{ stack | capitalize }} language standards: naming, error handling, and style conventions.{% endif %}"
+when_to_use: "{% if stack == 'python' %}When writing or reviewing *.py source files.{% elif stack == 'node' %}When writing or reviewing *.ts, *.tsx, *.js, *.jsx files.{% elif stack == 'go' %}When writing or reviewing *.go files.{% else %}When writing or reviewing source code files.{% endif %}"
+user-invocable: false
+hub-skill-ids: [implementation, review, refactoring]
+---
+
+# Skill: {% if stack == "python" %}Python{% elif stack == "node" %}TypeScript / JavaScript{% elif stack == "go" %}Go{% else %}{{ stack | capitalize }}{% endif %}
+
+## Rules
+
+{% if stack == "python" %}REJECT if:
+- Missing type hints on public functions or methods
+- Bare `except:` without a specific exception type
+- `print()` used in production code (use `logging` instead)
+- Mutable default arguments (e.g., `def f(x=[]):`)
+
+REQUIRE:
+- `from __future__ import annotations` in all modules
+- Type hints on all public functions and class attributes
+- Pydantic v2 for data validation models
+
+PREFER:
+- Early returns over deeply nested conditionals
+- `pathlib.Path` over `os.path` for filesystem operations
+- Dataclasses or Pydantic over raw dicts for structured data
+{% elif stack == "node" %}REJECT if:
+- `any` type without `// @ts-expect-error` justification
+- Missing return types on exported functions
+
+REQUIRE:
+- TypeScript strict mode enabled
+
+PREFER:
+- Named exports over default exports
+- Functional patterns over class-based code
+{% elif stack == "go" %}REJECT if:
+- Errors ignored without explanation (`_ = err`)
+- Global mutable state
+
+REQUIRE:
+- Error handling on all returned errors
+- `go vet` passes without warnings
+
+PREFER:
+- Interfaces over concrete types in function signatures
+- Table-driven tests
+{% else %}<!-- TODO: Add {{ stack }}-specific language rules here -->
+
+REQUIRE:
+- Descriptive names for all variables, functions, and types
+- Error handling for all failure cases
+{% endif %}

@@ -1,0 +1,46 @@
+---
+name: testing
+description: "{% if stack == 'python' %}pytest testing standards: naming, fixtures, isolation, and parametrize patterns.{% elif stack == 'node' %}Jest/vitest testing standards: structure, isolation, and async patterns.{% elif stack == 'go' %}Go testing standards: table-driven tests, subtests, and testify patterns.{% else %}Testing standards: naming, isolation, and coverage requirements.{% endif %}"
+when_to_use: "{% if stack == 'python' %}When writing or reviewing test files in tests/ or matching *test*.py.{% elif stack == 'node' %}When writing or reviewing *.test.* or *.spec.* files.{% elif stack == 'go' %}When writing or reviewing *_test.go files.{% else %}When writing or reviewing test files.{% endif %}"
+user-invocable: false
+hub-skill-ids: [review]
+---
+
+# Skill: Testing
+
+{% if stack == "python" %}## Framework
+
+pytest — `uv run pytest -q`
+
+{% elif stack == "node" %}## Framework
+
+jest / vitest — `npm test`
+
+{% elif stack == "go" %}## Framework
+
+go test — `go test ./...`
+
+{% endif %}## Rules
+
+REQUIRE:
+- Tests for all public functions and behavior changes
+{% if stack == "python" %}- Descriptive test names: `test_<subject>_<condition>_<expected_outcome>`
+- Use `tmp_path` fixture for filesystem-touching tests
+{% elif stack == "go" %}- Table-driven tests for multiple input variations
+{% endif %}- Isolated tests: no shared mutable state between tests
+
+REJECT if:
+- Tests call external services without mocking
+- Empty test body
+- Tests depend on execution order
+
+PREFER:
+{% if stack == "python" %}- `pytest.mark.parametrize` over repeated similar test functions
+- Factory fixtures over inline setup in each test
+- `conftest.py` for shared fixtures within a package
+{% elif stack == "node" %}- `describe` / `it` structure for grouping related tests
+- `beforeEach` / `afterEach` for setup and teardown
+{% elif stack == "go" %}- Subtests (`t.Run`) for grouping related cases
+- Testify for assertions
+{% else %}- Parameterized tests over repeated similar test functions
+{% endif %}

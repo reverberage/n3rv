@@ -1,0 +1,46 @@
+# AGENTS.md — Coding Standards for nerv
+
+## Project Stack
+
+**Stack**: python
+
+## How to Use
+
+When working on this project:
+
+1. Read the **Skill Index** below
+2. Identify which skill files apply to the task at hand
+3. Load and follow the relevant skill file(s)
+4. Multiple skills can apply simultaneously
+
+---
+
+## Skill Index
+
+| Trigger | Skill | Path |
+|---------|-------|------|
+| `*.py` source files | Language | [`.nerv/skills/code/SKILL.md`](.nerv/skills/code/SKILL.md) |
+| `tests/`, `*test*.py` | Testing | [`.nerv/skills/testing/SKILL.md`](.nerv/skills/testing/SKILL.md) |
+| git commits, PRs | Commits | [`.nerv/skills/commits/SKILL.md`](.nerv/skills/commits/SKILL.md) |
+| SDD: explore ideas | SDD Explore | [`.nerv/skills/sdd-explore/SKILL.md`](.nerv/skills/sdd-explore/SKILL.md) |
+| SDD: create proposal | SDD Propose | [`.nerv/skills/sdd-propose/SKILL.md`](.nerv/skills/sdd-propose/SKILL.md) |
+| SDD: write specs | SDD Spec | [`.nerv/skills/sdd-spec/SKILL.md`](.nerv/skills/sdd-spec/SKILL.md) |
+| SDD: technical design | SDD Design | [`.nerv/skills/sdd-design/SKILL.md`](.nerv/skills/sdd-design/SKILL.md) |
+| SDD: break down tasks | SDD Tasks | [`.nerv/skills/sdd-tasks/SKILL.md`](.nerv/skills/sdd-tasks/SKILL.md) |
+| SDD: implement code | SDD Apply | [`.nerv/skills/sdd-apply/SKILL.md`](.nerv/skills/sdd-apply/SKILL.md) |
+| SDD: verify implementation | SDD Verify | [`.nerv/skills/sdd-verify/SKILL.md`](.nerv/skills/sdd-verify/SKILL.md) |
+| SDD: archive change | SDD Archive | [`.nerv/skills/sdd-archive/SKILL.md`](.nerv/skills/sdd-archive/SKILL.md) |
+| `judgment day`, adversarial review | Judgment Day | [`.nerv/skills/judgment-day/SKILL.md`](.nerv/skills/judgment-day/SKILL.md) |
+
+---
+
+## Universal Rules (all files)
+
+REJECT if:
+- Hardcoded secrets or credentials
+- Silent error handling (empty `except: pass`, empty `catch {}` blocks)
+- `TODO` or `FIXME` without a linked issue number
+
+REQUIRE:
+- Descriptive variable and function names
+- Error messages that help debugging
