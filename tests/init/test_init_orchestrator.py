@@ -5,10 +5,8 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-import pytest
 
 from nerv.init import run_init
-from nerv.init.context import Stack
 
 
 def test_init_in_empty_project_creates_all_files(tmp_path: Path):
@@ -22,11 +20,13 @@ def test_init_in_empty_project_creates_all_files(tmp_path: Path):
     expected_files = [
         ".nerv/a2a-config.yaml",
         "AGENTS.md",
-        "mcp.json",
+        "opencode.json",
         ".githooks/pre-push",
-        ".nerv/skills/code/SKILL.md",
-        ".nerv/skills/testing/SKILL.md",
-        ".nerv/skills/commits/SKILL.md",
+        ".opencode/skills/code/SKILL.md",
+        ".opencode/skills/testing/SKILL.md",
+        ".opencode/skills/commits/SKILL.md",
+        ".opencode/commands/sdd-new.md",
+        ".opencode/agents/sdd-explorer.md",
     ]
 
     for file_path in expected_files:
@@ -55,14 +55,13 @@ def test_init_with_force_overwrites_files(tmp_path: Path):
 
     run_init(tmp_path, project_name=None, stack_override=None, force=False)
 
-    mcp = tmp_path / "mcp.json"
-    original_content = mcp.read_text()
-    mcp.write_text('{"modified": true}')
+    ocode = tmp_path / "opencode.json"
+    ocode.write_text('{"modified": true}')
 
     exit_code = run_init(tmp_path, project_name=None, stack_override=None, force=True)
 
     assert exit_code == 0
-    assert '{"modified"' not in mcp.read_text()
+    assert '{"modified"' not in ocode.read_text()
 
 
 def test_init_with_explicit_project_name_and_stack(tmp_path: Path):
@@ -82,7 +81,7 @@ def test_init_with_explicit_project_name_and_stack(tmp_path: Path):
     assert "port: 19820" in content
 
     agents_md = tmp_path / "AGENTS.md"
-    assert "- **Stack**: go" in agents_md.read_text()
+    assert "**Stack**: go" in agents_md.read_text()
 
 
 def test_init_updates_marker_files_idempotently(tmp_path: Path):
@@ -137,6 +136,7 @@ def test_hooks_are_executable(tmp_path: Path):
     run_init(tmp_path, project_name=None, stack_override=None, force=False)
 
     import os
+
     pre_push = tmp_path / ".githooks/pre-push"
 
     assert os.access(pre_push, os.X_OK)

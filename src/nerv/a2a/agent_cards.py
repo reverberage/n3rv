@@ -29,10 +29,26 @@ def opencode_agent_card(settings: RuntimeSettings) -> NervAgentCard:
         version="0.1.0",
         capabilities=AgentCapabilities(streaming=True),
         skills=[
-            AgentSkill(id="implementation", name="Code Implementation", description="Generate production code from designs, specs, or instructions."),
-            AgentSkill(id="refactoring", name="Code Refactoring", description="Restructure existing code while preserving behavior."),
-            AgentSkill(id="file-ops", name="File Operations", description="Create, move, rename, and bulk-edit files across the project tree."),
-            AgentSkill(id="plan-execution", name="Plan Execution", description="Execute step-by-step implementation plans."),
+            AgentSkill(
+                id="implementation",
+                name="Code Implementation",
+                description="Generate production code from designs, specs, or instructions.",
+            ),
+            AgentSkill(
+                id="refactoring",
+                name="Code Refactoring",
+                description="Restructure existing code while preserving behavior.",
+            ),
+            AgentSkill(
+                id="file-ops",
+                name="File Operations",
+                description="Create, move, rename, and bulk-edit files across the project tree.",
+            ),
+            AgentSkill(
+                id="plan-execution",
+                name="Plan Execution",
+                description="Execute step-by-step implementation plans.",
+            ),
         ],
     )
 

@@ -3,7 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 
-PROJECT_MARKERS = (".git", "pyproject.toml", "package.json", "go.mod", "Cargo.toml", ".nerv")
+PROJECT_MARKERS = (
+    ".git",
+    "pyproject.toml",
+    "package.json",
+    "go.mod",
+    "Cargo.toml",
+    ".nerv",
+)
 
 
 class ProjectRootNotFoundError(RuntimeError):
@@ -29,6 +36,7 @@ def resolve_project_root(start: str | Path | None = None, max_depth: int = 10) -
     raise ProjectRootNotFoundError(
         "Could not detect project root. Run from inside a project directory."
     )
+
 
 def project_relative_path(project_root: Path, *parts: str) -> Path:
     return project_root.joinpath(*parts).resolve()

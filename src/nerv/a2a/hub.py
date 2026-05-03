@@ -4,21 +4,20 @@ import asyncio
 import json
 import logging
 from datetime import UTC, datetime
-from pathlib import Path
 from typing import Any
 
 from aiohttp import web
-
-logger = logging.getLogger("nerv.hub")
 
 from nerv.a2a.agent_cards import load_agent_cards
 from nerv.a2a.router import RoutingDecision, SkillNotFoundError, TaskRouter
 from nerv.a2a.state import DelegationArtifact, HubStateStore
 from nerv.config import RuntimeSettings
 from nerv.init.registry import SkillRegistry
-from nerv.mcp.client import HubMCPBridge, MCPToolError
+from nerv.mcp.memory_service import MemoryService
 from nerv.mcp.shared import ensure_runtime_directories, resolve_runtime_settings
 from nerv.models.a2a import TaskState
+
+logger = logging.getLogger("nerv.hub")
 
 HUB_KEY = web.AppKey("hub", "A2AHub")
 
@@ -35,34 +34,28 @@ class A2AHub:
         self.settings = settings
         ensure_runtime_directories(settings.paths)
         self.cards = load_agent_cards(settings)
-        self.mcp = HubMCPBridge(settings)
+        self.memory = MemoryService(settings)
         self.registry = SkillRegistry.scan(settings.paths.project_root)
-        self.router = TaskRouter(cards=self.cards, mcp=self.mcp, registry=self.registry)
+        self.router = TaskRouter(
+            cards=self.cards, memory_service=self.memory, registry=self.registry
+        )
         self.state = HubStateStore(settings)
 
     def create_app(self) -> web.Application:
         """Build aiohttp app with health, agent cards, and RPC routes."""
         app = web.Application()
         app[HUB_KEY] = self
-        app.cleanup_ctx.append(self._mcp_lifecycle)
         app.router.add_get("/health", self.get_health)
         app.router.add_get("/.well-known/agent.json", self.get_hub_card)
         app.router.add_get("/agents/{agent_id}/agent.json", self.get_agent_card)
         app.router.add_post("/rpc", self.handle_rpc)
         return app
 
-    async def _mcp_lifecycle(self, app: web.Application):
-        await self.mcp.start()
-        await self._recover_tasks()
-        yield
-        await self.mcp.close()
-
     async def _recover_tasks(self) -> None:
         """On startup, recover non-terminal tasks.
 
         SUBMITTED → rerouted. WORKING → marked RESTART_RECOVERY.
         """
-        from datetime import datetime, UTC
 
         tasks = self.state.list_tasks()
 
@@ -109,7 +102,9 @@ class A2AHub:
 
     async def get_health(self, request: web.Request) -> web.Response:
         logger.debug("GET /health")
-        return web.json_response({"status": "ok", "project": self.settings.project_name})
+        return web.json_response(
+            {"status": "ok", "project": self.settings.project_name}
+        )
 
     async def get_hub_card(self, request: web.Request) -> web.Response:
         logger.debug("GET /.well-known/agent.json")
@@ -131,9 +126,6 @@ class A2AHub:
         params = payload.get("params") or {}
 
         logger.info("RPC %s id=%s", method, request_id)
-        if method == "tasks/sendSubscribe":
-            task_id = str(params.get("task_id", ""))
-            return await self.tasks_send_subscribe(request, task_id)
 
         try:
             if method == "tasks/send":
@@ -149,13 +141,24 @@ class A2AHub:
             else:
                 logger.warning("Unknown RPC method: %s", method)
                 return web.json_response(
-                    {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32601, "message": f"Method not found: {method}"}},
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {
+                            "code": -32601,
+                            "message": f"Method not found: {method}",
+                        },
+                    },
                     status=404,
                 )
         except KeyError as exc:
             logger.warning("RPC %s bad request: %s", method, exc)
             return web.json_response(
-                {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32000, "message": str(exc)}},
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {"code": -32000, "message": str(exc)},
+                },
                 status=400,
             )
 
@@ -165,20 +168,27 @@ class A2AHub:
     async def tasks_send(self, params: dict[str, Any]) -> dict[str, Any]:
         """Submit task, route to agent, auto-complete if metadata.auto_complete=True."""
         description = str(params["description"])
+        if len(description) > 5000:
+            raise web.HTTPBadRequest(text="Description too long (max 5000 chars)")
         requesting_agent = str(params.get("requesting_agent", "unknown"))
         skill_id = str(params["skill_id"]) if params.get("skill_id") else None
         metadata = dict(params.get("metadata") or {})
 
-        logger.info("tasks/send from=%s skill=%s desc=%r", requesting_agent, skill_id, description[:80])
+        logger.info(
+            "tasks/send from=%s skill=%s desc=%r",
+            requesting_agent,
+            skill_id,
+            description[:80],
+        )
 
-        task = self.state.create_task(
+        task = self._create_task(
             requesting_agent=requesting_agent,
-            assigned_agent="pending",
-            target_skill=skill_id or "implementation",
+            skill_id=skill_id,
             description=description,
             metadata=metadata,
         )
         logger.debug("task created id=%s", task.id)
+
         try:
             task, decision = await self._route_task(
                 task_id=task.id,
@@ -186,24 +196,57 @@ class A2AHub:
                 description=description,
                 requesting_agent=requesting_agent,
             )
-            if metadata.get("auto_complete", True):
-                artifact = await self._save_delegation_artifacts(
-                    task_id=task.id,
+            if metadata.get("auto_complete", False):
+                task = await self._auto_complete_task(
+                    task=task,
                     decision=decision,
                     requesting_agent=requesting_agent,
                     description=description,
-                )
-                task = self.state.update_task(
-                    task.id,
-                    state=TaskState.COMPLETED,
-                    artifacts=[artifact],
-                    metadata={**task.metadata, "completed_at": task.updated_at.isoformat()},
                 )
                 logger.info("task=%s completed -> %s", task.id, decision.card.name)
         except Exception as exc:
             task = self._handle_task_exception(task.id, exc)
 
         return task.to_jsonrpc_result()
+
+    def _create_task(
+        self,
+        *,
+        requesting_agent: str,
+        skill_id: str | None,
+        description: str,
+        metadata: dict,
+    ) -> Any:
+        """Create a new task in SUBMITTED state."""
+        return self.state.create_task(
+            requesting_agent=requesting_agent,
+            assigned_agent="pending",
+            target_skill=skill_id or "implementation",
+            description=description,
+            metadata=metadata,
+        )
+
+    async def _auto_complete_task(
+        self,
+        *,
+        task: Any,
+        decision: Any,
+        requesting_agent: str,
+        description: str,
+    ) -> Any:
+        """Auto-complete a task by saving delegation artifacts."""
+        artifact = await self._save_delegation_artifacts(
+            task_id=task.id,
+            decision=decision,
+            requesting_agent=requesting_agent,
+            description=description,
+        )
+        return self.state.update_task(
+            task.id,
+            state=TaskState.COMPLETED,
+            artifacts=[artifact],
+            metadata={**task.metadata, "completed_at": task.updated_at.isoformat()},
+        )
 
     async def _route_task(
         self,
@@ -245,7 +288,7 @@ class A2AHub:
         requesting_agent: str,
         description: str = "",
     ) -> DelegationArtifact:
-        """Save delegation event to memory (session scope) via MCP bridge."""
+        """Save delegation event to memory (session scope) via MemoryService."""
         artifact = DelegationArtifact(
             artifact_id=f"artifact-{task_id}",
             text=f"Delegated to {decision.card.name} for skill {decision.skill.id}",
@@ -256,7 +299,7 @@ class A2AHub:
             f"Description: {description[:500]}"
         )
         logger.debug("memory_save for task=%s", task_id)
-        await self.mcp.memory_save(
+        self.memory.memory_save(
             content=memory_content,
             title=f"Delegation: {decision.skill.id} → {decision.card.name}",
             type="context",
@@ -270,12 +313,13 @@ class A2AHub:
         inner = exc.exceptions[0] if isinstance(exc, BaseExceptionGroup) else exc
         if isinstance(inner, SkillNotFoundError):
             logger.warning("task=%s SKILL_NOT_FOUND: %s", task_id, inner)
-            return self._fail_task(task_id, error_code="SKILL_NOT_FOUND", error_message=str(inner))
-        if isinstance(inner, MCPToolError):
-            logger.error("task=%s MCP_TOOL_ERROR: %s", task_id, inner)
-            return self._fail_task(task_id, error_code="MCP_TOOL_ERROR", error_message=str(inner))
+            return self._fail_task(
+                task_id, error_code="SKILL_NOT_FOUND", error_message=str(inner)
+            )
         logger.exception("task=%s DELEGATION_FAILED: %s", task_id, exc)
-        return self._fail_task(task_id, error_code="DELEGATION_FAILED", error_message=str(exc))
+        return self._fail_task(
+            task_id, error_code="DELEGATION_FAILED", error_message=str(exc)
+        )
 
     def _load_task_or_fail(self, task_id: str):
         """Load task or raise KeyError."""
@@ -285,7 +329,6 @@ class A2AHub:
         return task
 
     def _fail_task(self, task_id: str, *, error_code: str, error_message: str):
-        """Mark task as FAILED with error details."""
         """Mark task as FAILED with error details."""
         task = self._load_task_or_fail(task_id)
         return self.state.update_task(
@@ -298,7 +341,6 @@ class A2AHub:
 
     async def tasks_get(self, params: dict[str, Any]) -> dict[str, Any]:
         """Fetch task by ID and return JSON-RPC result."""
-        """Fetch task by ID and return JSON-RPC result."""
         task_id = str(params["task_id"])
         task = self._load_task_or_fail(task_id)
         return task.to_jsonrpc_result()
@@ -307,12 +349,24 @@ class A2AHub:
         """Cancel task if not already in terminal state."""
         task_id = str(params["task_id"])
         task = self._load_task_or_fail(task_id)
+        # OWASP: validate agent can only cancel own tasks or hub tasks
+        requesting_agent = str(params.get("requesting_agent", "unknown"))
+        if requesting_agent != task.assigned_agent and requesting_agent != "hub":
+            logger.warning(
+                "Unauthorized cancel: agent=%s task.assigned=%s",
+                requesting_agent,
+                task.assigned_agent,
+            )
+            raise web.HTTPForbidden(text="Agent can only cancel own tasks")
         if task.state in {TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED}:
             return task.to_jsonrpc_result()
         updated = self.state.update_task(
             task_id,
             state=TaskState.CANCELED,
-            metadata={**task.metadata, "cancel_reason": params.get("reason", "user requested")},
+            metadata={
+                **task.metadata,
+                "cancel_reason": params.get("reason", "user requested"),
+            },
         )
         return updated.to_jsonrpc_result()
 
@@ -325,7 +379,12 @@ class A2AHub:
             tasks = [t for t in tasks if t.assigned_agent == assigned_agent]
         if state_filter:
             tasks = [t for t in tasks if t.state.value == state_filter]
-        logger.debug("tasks/list agent=%s state=%s -> %d tasks", assigned_agent, state_filter, len(tasks))
+        logger.debug(
+            "tasks/list agent=%s state=%s -> %d tasks",
+            assigned_agent,
+            state_filter,
+            len(tasks),
+        )
         return {"tasks": [t.to_jsonrpc_result() for t in tasks]}
 
     async def tasks_complete(self, params: dict[str, Any]) -> dict[str, Any]:
@@ -334,6 +393,14 @@ class A2AHub:
         result_text = str(params.get("result", "Task completed"))
         completing_agent = str(params.get("completing_agent", "unknown"))
         task = self._load_task_or_fail(task_id)
+        # OWASP: validate agent can only complete own tasks or hub tasks
+        if completing_agent != task.assigned_agent and completing_agent != "hub":
+            logger.warning(
+                "Unauthorized complete: agent=%s task.assigned=%s",
+                completing_agent,
+                task.assigned_agent,
+            )
+            raise web.HTTPForbidden(text="Agent can only complete own tasks")
         if task.state in {TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED}:
             return task.to_jsonrpc_result()
         artifact = DelegationArtifact(
@@ -344,51 +411,33 @@ class A2AHub:
             task_id,
             state=TaskState.COMPLETED,
             artifacts=[artifact],
-            metadata={**task.metadata, "completed_by": completing_agent, "completed_at": datetime.now(UTC).isoformat()},
+            metadata={
+                **task.metadata,
+                "completed_by": completing_agent,
+                "completed_at": datetime.now(UTC).isoformat(),
+            },
         )
         logger.info("task=%s completed by agent=%s", task_id, completing_agent)
         return updated.to_jsonrpc_result()
 
-    async def tasks_send_subscribe(self, request: web.Request, task_id: str) -> web.StreamResponse:
-        """SSE stream for task status updates (not fully implemented yet)."""
-        response = web.StreamResponse()
-        response.headers["Content-Type"] = "text/event-stream"
-        response.headers["Cache-Control"] = "no-cache"
-        response.headers["X-Accel-Buffering"] = "no"
-        await response.prepare(request)
 
-        try:
-            async for state in self.state.subscribe(task_id):
-                await response.write(_format_sse_event(state))
-        except (ConnectionResetError, BrokenPipeError):
-            pass
-
-        return response
-
-
-def build_hub(project_root: Path | None = None) -> A2AHub:
-    """Create A2AHub instance with resolved runtime settings."""
-    settings = resolve_runtime_settings(project_root)
-    return A2AHub(settings)
-
-
-async def run_hub(project_root: Path | None = None) -> None:
-    """Run hub server indefinitely (blocks on asyncio.Event)."""
-    hub = build_hub(project_root)
+async def run_hub() -> None:
+    settings = resolve_runtime_settings()
+    hub = A2AHub(settings)
     app = hub.create_app()
+    await hub._recover_tasks()
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, host=hub.settings.a2a_host, port=hub.settings.a2a_port)
+    site = web.TCPSite(runner, host=settings.a2a_host, port=settings.a2a_port)
     await site.start()
-    try:
-        await asyncio.Event().wait()
-    finally:
-        await runner.cleanup()
+    logger.info("nerv hub listening on %s:%d", settings.a2a_host, settings.a2a_port)
+    await asyncio.Event().wait()
 
 
 def main() -> None:
     """Entry point for nerv-hub command."""
     import os
+
     log_level = os.environ.get("NERV_LOG_LEVEL", "INFO").upper()
     logging.basicConfig(
         level=log_level,

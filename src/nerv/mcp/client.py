@@ -30,27 +30,40 @@ class MCPToolError(RuntimeError):
 
 
 class StdioMCPClient:
-    def __init__(self, *, settings: RuntimeSettings, module_name: str, runner_name: str) -> None:
+    def __init__(
+        self, *, settings: RuntimeSettings, module_name: str, runner_name: str
+    ) -> None:
         self.settings = settings
         self.module_name = module_name
         self.runner_name = runner_name
 
-    async def call_tool(self, name: str, arguments: dict[str, Any] | None = None) -> Any:
+    async def call_tool(
+        self, name: str, arguments: dict[str, Any] | None = None
+    ) -> Any:
         logger.debug("mcp call module=%s tool=%s", self.module_name, name)
         params = StdioServerParameters(
             command=sys.executable,
-            args=["-c", f"from {self.module_name} import {self.runner_name}; {self.runner_name}()"],
+            args=[
+                "-c",
+                f"from {self.module_name} import {self.runner_name}; {self.runner_name}()",
+            ],
             cwd=self.settings.paths.project_root,
             env=_subprocess_env(),
         )
         async with AsyncExitStack() as stack:
-            read_stream, write_stream = await stack.enter_async_context(stdio_client(params))
-            session = await stack.enter_async_context(ClientSession(read_stream, write_stream))
+            read_stream, write_stream = await stack.enter_async_context(
+                stdio_client(params)
+            )
+            session = await stack.enter_async_context(
+                ClientSession(read_stream, write_stream)
+            )
             await session.initialize()
             result = await session.call_tool(name, arguments or {})
             if result.isError:
                 err = self._extract_error(result)
-                logger.error("mcp tool error module=%s tool=%s: %s", self.module_name, name, err)
+                logger.error(
+                    "mcp tool error module=%s tool=%s: %s", self.module_name, name, err
+                )
                 raise MCPToolError(err)
             logger.debug("mcp call ok module=%s tool=%s", self.module_name, name)
             return self._decode_result(result)
@@ -98,8 +111,13 @@ class HubMCPBridge:
     async def close(self) -> None:
         return None
 
-    async def memory_search(self, *, query: str, limit: int = 5, type_filter: str | None = None) -> dict:
-        result = await self.memory.call_tool("memory_search", {"query": query, "limit": limit, "type_filter": type_filter})
+    async def memory_search(
+        self, *, query: str, limit: int = 5, type_filter: str | None = None
+    ) -> dict:
+        result = await self.memory.call_tool(
+            "memory_search",
+            {"query": query, "limit": limit, "type_filter": type_filter},
+        )
         if isinstance(result, dict) and "result" in result:
             return result["result"]
         return result

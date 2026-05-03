@@ -47,6 +47,7 @@ async def test_tasks_send_persists_completed_task(runtime_settings) -> None:
                     "requesting_agent": "claude",
                     "skill_id": "implementation",
                     "description": "Implement auth module from design",
+                    "metadata": {"auto_complete": True},
                 },
             },
         )
@@ -55,12 +56,12 @@ async def test_tasks_send_persists_completed_task(runtime_settings) -> None:
         assert response.status == 200
         task = payload["result"]
         assert task["status"]["state"] == "completed"
-        task_path = runtime_settings.paths.hub_state_dir / "tasks" / f"{task['id']}.json"
+        task_path = (
+            runtime_settings.paths.hub_state_dir / "tasks" / f"{task['id']}.json"
+        )
         assert task_path.exists()
     finally:
         await client.close()
-
-
 
 
 @pytest.mark.asyncio
@@ -77,6 +78,7 @@ async def test_tasks_get_returns_persisted_task(runtime_settings) -> None:
                     "requesting_agent": "claude",
                     "skill_id": "implementation",
                     "description": "Implement auth module from design",
+                    "metadata": {"auto_complete": True},
                 },
             },
         )
@@ -126,7 +128,11 @@ async def test_cancel_working_task(runtime_settings) -> None:
                 "jsonrpc": "2.0",
                 "id": "4",
                 "method": "tasks/cancel",
-                "params": {"task_id": task_id, "reason": "user requested"},
+                "params": {
+                    "task_id": task_id,
+                    "reason": "user requested",
+                    "requesting_agent": "opencode",
+                },
             },
         )
         payload = await cancelled.json()

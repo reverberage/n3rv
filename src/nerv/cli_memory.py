@@ -53,7 +53,8 @@ def memory_list(
     filtered = [
         memory
         for memory in memories
-        if (type is None or memory["type"] == type) and (scope is None or memory["scope"] == scope)
+        if (type is None or memory["type"] == type)
+        and (scope is None or memory["scope"] == scope)
     ][:limit]
 
     if not filtered:
@@ -85,12 +86,16 @@ def memory_list(
 def memory_search(
     query: str = typer.Argument(..., help="Semantic query"),
     type: str | None = typer.Option(None, "--type", help="Filter by memory type"),
-    keyword: str | None = typer.Option(None, "--keyword", help="Add a keyword content filter"),
+    keyword: str | None = typer.Option(
+        None, "--keyword", help="Add a keyword content filter"
+    ),
     limit: int = typer.Option(5, "--limit", help="Maximum results to show"),
 ) -> None:
     """Search memories."""
     try:
-        response = _build_service().memory_search(query=query, type_filter=type, keyword=keyword, limit=limit)
+        response = _build_service().memory_search(
+            query=query, type_filter=type, keyword=keyword, limit=limit
+        )
     except Exception as exc:
         _print_memory_error(exc)
 
@@ -117,13 +122,17 @@ def memory_search(
 
     console.print(table)
     if response.get("nudge"):
-        console.print(f"[yellow]{response['nude']}[/yellow]")
+        console.print(f"[yellow]{response['nudge']}[/yellow]")
 
 
 @memory_app.command("prune")
 def memory_prune(
-    scope: str = typer.Option(..., "--scope", help="Scope to prune: session or personal"),
-    older_than: int = typer.Option(30, "--older-than", help="Soft-delete memories older than N days"),
+    scope: str = typer.Option(
+        ..., "--scope", help="Scope to prune: session or personal"
+    ),
+    older_than: int = typer.Option(
+        30, "--older-than", help="Soft-delete memories older than N days"
+    ),
 ) -> None:
     """Soft-delete old memories of a given scope."""
     try:
@@ -131,7 +140,9 @@ def memory_prune(
     except Exception as exc:
         _print_memory_error(exc)
 
-    console.print(f"Pruned [green]{result['pruned']}[/green] {scope} memories older than {older_than} days.")
+    console.print(
+        f"Pruned [green]{result['pruned']}[/green] {scope} memories older than {older_than} days."
+    )
 
 
 @memory_app.command("stats")

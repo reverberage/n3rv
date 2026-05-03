@@ -5,7 +5,6 @@ Covers CLI integration, argument parsing, and end-to-end update workflows.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -28,13 +27,13 @@ def test_update_overwrites_infrastructure_files(initialized_project: Path):
 
 def test_update_skips_command_files_by_default(initialized_project: Path):
     """Test skip-default strategy preserves command files by default."""
-    # nerv doesn't use .claude/commands, skip this test
+    # nerv uses SKIP_DEFAULT for command files — no separate .claude path
     pass
 
 
 def test_update_force_commands_overwrites_command_files(initialized_project: Path):
     """Test force_commands flag overwrites command files."""
-    # nerv doesn't use .claude/commands, skip this test
+    # nerv uses SKIP_DEFAULT with --force-commands override
     pass
 
 
@@ -89,12 +88,12 @@ def test_update_is_idempotent(initialized_project: Path):
     run_update(initialized_project, dry_run=False, force_commands=False)
 
     agents_md_content = (initialized_project / "AGENTS.md").read_text()
-    mcp_content = (initialized_project / "mcp.json").read_text()
+    ocode_content = (initialized_project / "opencode.json").read_text()
 
     run_update(initialized_project, dry_run=False, force_commands=False)
 
     assert (initialized_project / "AGENTS.md").read_text() == agents_md_content
-    assert (initialized_project / "mcp.json").read_text() == mcp_content
+    assert (initialized_project / "opencode.json").read_text() == ocode_content
 
 
 def test_update_only_overwrite_targets_only_overwrite_files(initialized_project: Path):
@@ -105,7 +104,9 @@ def test_update_only_overwrite_targets_only_overwrite_files(initialized_project:
     hook.write_text("# custom hook\n")
     agents_md.write_text("# custom agents rules\n")
 
-    result = run_update(initialized_project, dry_run=False, force_commands=False, only="overwrite")
+    result = run_update(
+        initialized_project, dry_run=False, force_commands=False, only="overwrite"
+    )
 
     assert result == 0
     assert hook.read_text() != "# custom hook\n"
@@ -115,7 +116,9 @@ def test_update_only_overwrite_targets_only_overwrite_files(initialized_project:
 
 def test_update_only_rejects_unknown_category(initialized_project: Path):
     """Test --only rejects unknown category values."""
-    result = runner.invoke(app, ["update", "--only", "unknown", "--root", str(initialized_project)])
+    result = runner.invoke(
+        app, ["update", "--only", "unknown", "--root", str(initialized_project)]
+    )
     assert result.exit_code == 1
     assert "Unknown update category" in result.output
 

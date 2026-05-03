@@ -32,11 +32,16 @@ def detect_agent_source() -> str:
     return os.environ.get("NERV_AGENT_SOURCE", "unknown")
 
 
-def result_payload(value: BaseModel | list[BaseModel] | dict[str, Any] | list[dict[str, Any]]) -> Any:
+def result_payload(
+    value: BaseModel | list[BaseModel] | dict[str, Any] | list[dict[str, Any]],
+) -> Any:
     if isinstance(value, BaseModel):
         return value.model_dump(mode="json")
     if isinstance(value, list):
-        return [item.model_dump(mode="json") if isinstance(item, BaseModel) else item for item in value]
+        return [
+            item.model_dump(mode="json") if isinstance(item, BaseModel) else item
+            for item in value
+        ]
     return value
 
 
@@ -45,7 +50,12 @@ def hub_rpc(hub_url: str, method: str, params: dict) -> dict:
     try:
         resp = httpx.post(
             f"{hub_url}/rpc",
-            json={"jsonrpc": "2.0", "id": f"hub-mcp-{uuid4().hex[:8]}", "method": method, "params": params},
+            json={
+                "jsonrpc": "2.0",
+                "id": f"hub-mcp-{uuid4().hex[:8]}",
+                "method": method,
+                "params": params,
+            },
             timeout=10.0,
         )
         resp.raise_for_status()
@@ -57,7 +67,9 @@ def hub_rpc(hub_url: str, method: str, params: dict) -> dict:
     return data["result"]
 
 
-def build_mcp_server(name: str, instructions: str, settings: RuntimeSettings) -> FastMCP:
+def build_mcp_server(
+    name: str, instructions: str, settings: RuntimeSettings
+) -> FastMCP:
     return FastMCP(
         name=name,
         instructions=instructions,

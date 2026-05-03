@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -35,17 +34,17 @@ def test_list_tasks_returns_all_tasks(state_store: HubStateStore):
         target_skill="skill1",
         description="Task 1",
     )
-    
+
     task2 = state_store.create_task(
         requesting_agent="agent3",
         assigned_agent="agent4",
         target_skill="skill2",
         description="Task 2",
     )
-    
+
     # List tasks
     tasks = state_store.list_tasks()
-    
+
     assert len(tasks) == 2
     task_ids = {t.id for t in tasks}
     assert task1.id in task_ids
@@ -61,14 +60,14 @@ def test_list_tasks_skips_malformed_json(state_store: HubStateStore):
         target_skill="skill1",
         description="Valid task",
     )
-    
+
     # Create a malformed task file
     malformed_path = state_store.tasks_dir / "task-malformed.json"
     malformed_path.write_text("{ invalid json }")
-    
+
     # List tasks should skip malformed file
     tasks = state_store.list_tasks()
-    
+
     assert len(tasks) == 1
     assert tasks[0].id == task.id
 
@@ -76,13 +75,13 @@ def test_list_tasks_skips_malformed_json(state_store: HubStateStore):
 def test_list_tasks_with_different_states(state_store: HubStateStore):
     """Test list_tasks returns tasks in various states."""
     # Create tasks in different states
-    task1 = state_store.create_task(
+    state_store.create_task(
         requesting_agent="agent1",
         assigned_agent="agent2",
         target_skill="skill1",
         description="Submitted task",
     )
-    
+
     task2 = state_store.create_task(
         requesting_agent="agent1",
         assigned_agent="agent2",
@@ -90,7 +89,7 @@ def test_list_tasks_with_different_states(state_store: HubStateStore):
         description="Working task",
     )
     state_store.update_task(task2.id, state=TaskState.WORKING)
-    
+
     task3 = state_store.create_task(
         requesting_agent="agent1",
         assigned_agent="agent2",
@@ -98,10 +97,10 @@ def test_list_tasks_with_different_states(state_store: HubStateStore):
         description="Completed task",
     )
     state_store.update_task(task3.id, state=TaskState.COMPLETED)
-    
+
     # List all tasks
     tasks = state_store.list_tasks()
-    
+
     assert len(tasks) == 3
     states = {t.state for t in tasks}
     assert TaskState.SUBMITTED in states

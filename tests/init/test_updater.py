@@ -77,36 +77,45 @@ def test_deep_merge_empty_overlay():
     assert result == {"key": "value"}
 
 
-def test_manifest_has_16_entries():
+def test_manifest_has_expected_entries():
     """Test manifest has expected number of entries."""
-    assert len(FILE_UPDATE_MANIFEST) == 16
+    assert len(FILE_UPDATE_MANIFEST) == 26
 
 
 def test_manifest_marker_files():
     """Test marker merge files are correctly identified."""
-    marker_files = [e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.MARKER_MERGE]
-    paths = {e.output_path for e in marker_files}
-    assert len(marker_files) == 0  # nerv uses overwrite for a2a-config, not marker_merge
+    marker_files = [
+        e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.MARKER_MERGE
+    ]
+    assert (
+        len(marker_files) == 0
+    )  # nerv uses overwrite for a2a-config, not marker_merge
 
 
 def test_manifest_json_merge_files():
     """Test JSON merge files are correctly identified."""
-    json_files = [e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.JSON_MERGE]
+    json_files = [
+        e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.JSON_MERGE
+    ]
     paths = {e.output_path for e in json_files}
-    assert "mcp.json" in paths
+    assert "opencode.json" in paths
     assert len(json_files) == 1
 
 
 def test_manifest_skip_default_files_are_commands():
-    """Test skip default files are SDD skills and core skills."""
-    skip_files = [e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.SKIP_DEFAULT]
-    assert len(skip_files) == 12
+    """Test skip default files are SDD skills, commands, and agents."""
+    skip_files = [
+        e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.SKIP_DEFAULT
+    ]
+    assert len(skip_files) == 23
     paths = {e.output_path for e in skip_files}
-    assert ".nerv/skills/code/SKILL.md" in paths
-    assert ".nerv/skills/testing/SKILL.md" in paths
-    assert ".nerv/skills/commits/SKILL.md" in paths
-    assert ".nerv/skills/sdd-explore/SKILL.md" in paths
-    assert ".nerv/skills/judgment-day/SKILL.md" in paths
+    assert ".opencode/skills/code/SKILL.md" in paths
+    assert ".opencode/skills/testing/SKILL.md" in paths
+    assert ".opencode/skills/commits/SKILL.md" in paths
+    assert ".opencode/skills/sdd-explore/SKILL.md" in paths
+    assert ".opencode/skills/judgment-day/SKILL.md" in paths
+    assert ".opencode/commands/sdd-new.md" in paths
+    assert ".opencode/agents/sdd-explorer.md" in paths
 
 
 def test_manifest_git_hooks_are_executable():
@@ -115,22 +124,28 @@ def test_manifest_git_hooks_are_executable():
     assert all(e.make_executable for e in hook_files)
 
 
-def test_manifest_create_if_missing_files_are_agents():
-    """Test create-if-missing files are AGENTS.md only."""
-    cim_files = [e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.CREATE_IF_MISSING]
-    paths = {e.output_path for e in cim_files}
-    assert "AGENTS.md" in paths
-    assert len(cim_files) == 1
+def test_manifest_create_if_missing_files():
+    """Test create-if-missing files — none in current manifest."""
+    cim_files = [
+        e
+        for e in FILE_UPDATE_MANIFEST
+        if e.strategy == UpdateStrategy.CREATE_IF_MISSING
+    ]
+    assert len(cim_files) == 0
 
 
 def test_update_summary_counts_correctly():
     """Test UpdateSummary counts results correctly."""
-    summary = UpdateSummary(results=[
-        UpdateResult("AGENTS.md", UpdateStrategy.MARKER_MERGE, "UPDATED"),
-        UpdateResult("mcp.json", UpdateStrategy.JSON_MERGE, "SKIPPED"),
-        UpdateResult(".githooks/pre-push", UpdateStrategy.OVERWRITE, "OVERWRITTEN"),
-        UpdateResult(".nerv/skills/code/SKILL.md", UpdateStrategy.SKIP_DEFAULT, "SKIPPED"),
-    ])
+    summary = UpdateSummary(
+        results=[
+            UpdateResult("AGENTS.md", UpdateStrategy.MARKER_MERGE, "UPDATED"),
+            UpdateResult("opencode.json", UpdateStrategy.JSON_MERGE, "SKIPPED"),
+            UpdateResult(".githooks/pre-push", UpdateStrategy.OVERWRITE, "OVERWRITTEN"),
+            UpdateResult(
+                ".opencode/skills/code/SKILL.md", UpdateStrategy.SKIP_DEFAULT, "SKIPPED"
+            ),
+        ]
+    )
     assert summary.updated_count == 2  # UPDATED + OVERWRITTEN
     assert summary.skipped_count == 2
     assert summary.error_count == 0
@@ -139,7 +154,9 @@ def test_update_summary_counts_correctly():
 def test_create_if_missing_creates_when_absent(tmp_path: Path):
     """Test create-if-missing creates file when it does not exist."""
     target = tmp_path / "AGENTS.md"
-    entry = UpdateEntry("opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING)
+    entry = UpdateEntry(
+        "opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING
+    )
 
     result = _handle_create_if_missing(entry, target, "# content", dry_run=False)
 
@@ -152,7 +169,9 @@ def test_create_if_missing_skips_when_present(tmp_path: Path):
     """Test create-if-missing skips file when it already exists."""
     target = tmp_path / "AGENTS.md"
     target.write_text("# user customized content")
-    entry = UpdateEntry("opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING)
+    entry = UpdateEntry(
+        "opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING
+    )
 
     result = _handle_create_if_missing(entry, target, "# new content", dry_run=False)
 
@@ -163,7 +182,9 @@ def test_create_if_missing_skips_when_present(tmp_path: Path):
 def test_create_if_missing_dry_run_reports_created(tmp_path: Path):
     """Test create-if-missing dry run reports CREATED without writing."""
     target = tmp_path / "AGENTS.md"
-    entry = UpdateEntry("opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING)
+    entry = UpdateEntry(
+        "opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING
+    )
 
     result = _handle_create_if_missing(entry, target, "# content", dry_run=True)
 

@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFound, UndefinedError
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+    StrictUndefined,
+    TemplateNotFound,
+    UndefinedError,
+)
 
 
 class TemplateRenderError(Exception):
@@ -28,4 +34,6 @@ class TemplateEngine:
         except TemplateNotFound as exc:
             raise TemplateRenderError(f"Template not found: {template_name}") from exc
         except UndefinedError as exc:
-            raise TemplateRenderError(f"Undefined variable in template {template_name}: {exc}") from exc
+            raise TemplateRenderError(
+                f"Undefined variable in template {template_name}: {exc}"
+            ) from exc

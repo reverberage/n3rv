@@ -1,138 +1,133 @@
 # NERV
 
-Invisible engineering infrastructure for opencode agents.
+> *"God's in his heaven. All's right with the world."*
 
-Provides agent-native project scaffolding, persistent semantic memory (ChromaDB), and A2A task delegation for AI-assisted development workflows.
+Invisible engineering infrastructure for AI agents. Named after the clandestine organization from *Neon Genesis Evangelion*, nerv provides the hidden machinery that powers agent-native development: project scaffolding (the **Geofront**), persistent semantic memory (the **MAGI**), and A2A task delegation (the **Command Center**). Integrates natively with opencode via MCP servers, agent skills, slash commands, and sub-agents.
 
-[Architecture](docs/ARCHITECTURE.md) • [SDD Workflow](docs/SDD-WORKFLOW.md) • [MCP Tools](docs/MCP-TOOLS.md) • [Contributing](CONTRIBUTING.md)
+[Architecture](docs/ARCHITECTURE.md) • [SDD Workflow](docs/SDD-WORKFLOW.md) • [MCP Tools](docs/MCP-TOOLS.md) • [Deployment](docs/DEPLOYMENT.md) • [Evangelion](EVANGELION.md) • [Security](SECURITY.md) • [Contributing](CONTRIBUTING.md)
 
-## Install
+## Why NERV?
 
-Requires Python >=3.14 and [uv](https://github.com/astral-sh/uv).
+Like its anime namesake, nerv operates from beneath the surface. While you write code in the light of your editor (Tokyo-3), nerv's infrastructure runs in the hidden Geofront (`nerv/`) below — the MAGI supercomputer stores and recalls engineering memories across sessions, the Command Center dispatches EVAs (agents) to execute missions (tasks), and the Human Instrumentality Project (SDD workflow) orchestrates the entire development lifecycle.
 
-```bash
-uv sync
-```
-
-Or install in development mode:
-
-```bash
-uv pip install -e .
-```
-
-Entry points: `nerv` (CLI), `nerv-memory` (MCP server), `nerv-hub` (A2A hub server).
+Every nerv concept maps to an Evangelion analog. See [EVANGELION.md](EVANGELION.md) for the full concept map.
 
 ## Quick Start
 
-Initialize NERV in your project:
-
 ```bash
+# Install
+uv sync
+
+# Initialize in your project
 cd /path/to/your/project
 nerv init
 ```
 
-`nerv init` detects your project stack (python/node/go/generic) and scaffolds:
+`nerv init` detects your project stack (python/node/go/generic) and scaffolds 40+ files:
 
 | File | Purpose |
 |------|---------|
 | `AGENTS.md` | Coding standards with skill index |
+| `opencode.json` | opencode config: MCP servers + instructions |
+| `.opencode/skills/` | Agent skills — code, testing, commits, SDD (12 skills) |
+| `.opencode/commands/` | Slash commands — `/sdd-new`, `/judgment-day`, `/review`, `/handoff` |
+| `.opencode/agents/` | Sub-agents — 7 SDD phase agents (explorer → archiver) |
 | `.nerv/a2a-config.yaml` | A2A hub configuration |
-| `.nerv/skills/` | Agent skills (code, testing, commits, SDD workflow) |
-| `mcp.json` | MCP server configuration |
+| `.nerv/skill-registry.md` | Auto-generated skill index for hub |
 | `.githooks/pre-push` | Git pre-push hook |
 
-Options:
+## OpenCode Integration
+
+NERV generates files in opencode's native discovery paths. When you run opencode in your project:
+
+- **Skills** in `.opencode/skills/` are auto-discovered via the `skill` tool — loaded on demand with full context
+- **Commands** in `.opencode/commands/` appear as slash commands in the TUI — type `/sdd-new` to start a workflow
+- **Agents** in `.opencode/agents/` are available as sub-agents — invoked by the orchestrator via `Task` tool
+- **Instructions** via `opencode.json` ensure `AGENTS.md` is loaded as context
+
+## Components
+
+### CLI
 
 ```bash
-nerv init [--root .] [--project-name X] [--stack python|node|go|generic] [--force]
-```
-
-Update existing scaffold:
-
-```bash
-nerv update [--dry-run] [--force-commands] [--only <files>]
-```
-
-## Commands
-
-### Hub
-
-Start the A2A hub server (default port 19820):
-
-```bash
+nerv init [--stack python|node|go|generic] [--force]
+nerv update [--dry-run] [--force-commands] [--only <strategy>]
 nerv hub start
+nerv memory list|search|prune|stats
 ```
 
-### Memory
-
-Inspect persistent engineering memories:
-
-```bash
-nerv memory list [--type bugfix|decision|...] [--scope project|personal] [--limit N]
-nerv memory search <query> [--type ...] [--keyword ...] [--limit N]
-nerv memory prune [--scope ...] [--older-than N]
-nerv memory stats
-```
+`--only` strategies: `overwrite`, `json-merge`, `create-if-missing`. Use `--force-commands` to overwrite commands and skills on update.
 
 ### MCP Servers
 
-For agent integration (opencode):
+Run as subprocesses by opencode, configured in `opencode.json`:
 
-```bash
-nerv-memory   # Memory MCP server (save, search, recall, context, session management)
-nerv-hub      # A2A hub MCP server (delegate tasks, poll work, complete tasks)
+| Command | Purpose |
+|---------|---------|
+| `nerv-memory` | Memory server — save, search, recall, context management |
+| `nerv-hub` | A2A hub — delegate tasks to agents, poll work, complete tasks |
+
+### A2A Hub
+
+JSON-RPC 2.0 server on `127.0.0.1:19820` for task delegation between agents. Supports `tasks/send`, `tasks/get`, `tasks/list`, `tasks/complete`, and SSE subscriptions.
+
+See [Architecture](docs/ARCHITECTURE.md) for system design.
+
+## Memory System
+
+Dual-store persistent memory:
+
+- **ChromaDB** — Vector embeddings for semantic search
+- **SQLite** — Relations between memories (judgments, revisions)
+
+Memory types: `architecture`, `bugfix`, `config`, `decision`, `discovery`, `learning`, `pattern`, `context`, `summary`, `note`.
+
+Scopes: `project` (shared), `session` (current), `personal` (agent-specific).
+
+## SDD Workflow
+
+8-phase Spec-Driven Development pipeline, started via `/sdd-new <change>`:
+
 ```
+explore → propose → spec → design → tasks → apply → verify → archive
+```
+
+Each phase is an agent skill (loaded via opencode's `skill` tool) with a dedicated sub-agent for delegation. Phases write to and read from persistent memory with `topic_key: sdd-<change_id>-<phase>`. See [SDD Workflow](docs/SDD-WORKFLOW.md) for phase details.
 
 ## Configuration
 
-Environment variables (`.env`):
+### Environment Variables
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `NERV_LOG_LEVEL` | `INFO` | Logging level |
-| `NERV_AGENT_SOURCE` | `unknown` | Agent identifier (e.g., `opencode`) |
+| `NERV_AGENT_SOURCE` | `unknown` | Agent identifier |
 | `NERV_HUB_URL` | `http://127.0.0.1:19820` | A2A hub URL |
-| `NERV_MEMORY_PROFILE` | `full` | Memory profile mode |
+| `NERV_MEMORY_PROFILE` | `full` | `full` or `safe` (read-only tools) |
 
-A2A hub config (`.nerv/a2a-config.yaml`, created by `nerv init`):
+### Hub Config
+
+`.nerv/a2a-config.yaml`:
 
 ```yaml
 hub:
   host: 127.0.0.1
   port: 19820
-project: <project-name>
+project: your-project-name
 ```
 
-## SDD Workflow
+## Development
 
-NERV includes 8 Spec-Driven Development phases as skills:
+```bash
+uv sync --dev
+uv run pytest
+```
 
-explore → propose → spec → design → tasks → apply → verify → archive
+## Security
 
-Triggered by the opencode agent during development sessions.
+NERV runs on localhost with no authentication. See [SECURITY.md](SECURITY.md) for the trust model and recommendations.
 
-## Judgment Day
+## Requirements
 
-Adversarial review skill that launches two independent blind judge sub-agents to review code, synthesizes findings, applies fixes, and re-judges.
-
-Trigger: `judgment day`, `judgment-day`, `review adversarial`, `dual review`
-
-## Troubleshooting
-
-### Hub won't start
-
-- Check if port 19820 is already in use: `lsof -i :19820`
-- Verify `.nerv/a2a-config.yaml` exists (run `nerv init` to create)
-- Check `NERV_LOG_LEVEL=DEBUG` for details
-
-### Memory store issues
-
-- ChromaDB corruption: delete `.nerv/memory/chroma/` and restart
-- ONNXRuntime unavailable: normal on Python 3.14/Windows, falls back to hash embeddings
-- Search returns no results: verify memories were saved (check `nerv memory list`)
-
-### A2A delegation fails
-
-- `SKILL_NOT_FOUND`: skill_id doesn't match any agent in `.nerv/a2a-config.yaml`
-- `MCP_TOOL_ERROR`: agent's MCP tool call failed — check agent logs
-- `RESTART_RECOVERY`: hub restarted while task was in progress — retry the task
+- Python >= 3.14
+- [uv](https://github.com/astral-sh/uv)

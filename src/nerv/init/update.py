@@ -65,7 +65,9 @@ class UpdateSummary:
 
     @property
     def updated_count(self) -> int:
-        return sum(1 for r in self.results if r.result in ("CREATED", "UPDATED", "OVERWRITTEN"))
+        return sum(
+            1 for r in self.results if r.result in ("CREATED", "UPDATED", "OVERWRITTEN")
+        )
 
     @property
     def skipped_count(self) -> int:
@@ -77,22 +79,134 @@ class UpdateSummary:
 
 
 FILE_UPDATE_MANIFEST: list[UpdateEntry] = [
-    UpdateEntry("nerv/a2a-config.yaml.j2", ".nerv/a2a-config.yaml", UpdateStrategy.OVERWRITE),
-    UpdateEntry("opencode/AGENTS.md.j2", "AGENTS.md", UpdateStrategy.CREATE_IF_MISSING),
-    UpdateEntry("opencode/skills/code/SKILL.md.j2", ".nerv/skills/code/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/testing/SKILL.md.j2", ".nerv/skills/testing/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/commits/SKILL.md.j2", ".nerv/skills/commits/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("mcp.json.j2", "mcp.json", UpdateStrategy.JSON_MERGE),
-    UpdateEntry("githooks/pre-push.py.j2", ".githooks/pre-push", UpdateStrategy.OVERWRITE, make_executable=True),
-    UpdateEntry("opencode/skills/sdd-explore/SKILL.md.j2", ".nerv/skills/sdd-explore/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-propose/SKILL.md.j2", ".nerv/skills/sdd-propose/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-spec/SKILL.md.j2", ".nerv/skills/sdd-spec/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-design/SKILL.md.j2", ".nerv/skills/sdd-design/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-tasks/SKILL.md.j2", ".nerv/skills/sdd-tasks/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-apply/SKILL.md.j2", ".nerv/skills/sdd-apply/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-verify/SKILL.md.j2", ".nerv/skills/sdd-verify/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/sdd-archive/SKILL.md.j2", ".nerv/skills/sdd-archive/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
-    UpdateEntry("opencode/skills/judgment-day/SKILL.md.j2", ".nerv/skills/judgment-day/SKILL.md", UpdateStrategy.SKIP_DEFAULT),
+    UpdateEntry(
+        "nerv/a2a-config.yaml.j2", ".nerv/a2a-config.yaml", UpdateStrategy.OVERWRITE
+    ),
+    UpdateEntry("opencode.json.j2", "opencode.json", UpdateStrategy.JSON_MERGE),
+    UpdateEntry(
+        "githooks/pre-push.py.j2",
+        ".githooks/pre-push",
+        UpdateStrategy.OVERWRITE,
+        make_executable=True,
+    ),
+    # Skills in opencode-native path
+    UpdateEntry(
+        "opencode/skills/code/SKILL.md.j2",
+        ".opencode/skills/code/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/testing/SKILL.md.j2",
+        ".opencode/skills/testing/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/commits/SKILL.md.j2",
+        ".opencode/skills/commits/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-explore/SKILL.md.j2",
+        ".opencode/skills/sdd-explore/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-propose/SKILL.md.j2",
+        ".opencode/skills/sdd-propose/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-spec/SKILL.md.j2",
+        ".opencode/skills/sdd-spec/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-design/SKILL.md.j2",
+        ".opencode/skills/sdd-design/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-tasks/SKILL.md.j2",
+        ".opencode/skills/sdd-tasks/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-apply/SKILL.md.j2",
+        ".opencode/skills/sdd-apply/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-verify/SKILL.md.j2",
+        ".opencode/skills/sdd-verify/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/sdd-archive/SKILL.md.j2",
+        ".opencode/skills/sdd-archive/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/skills/judgment-day/SKILL.md.j2",
+        ".opencode/skills/judgment-day/SKILL.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    # Slash commands
+    UpdateEntry(
+        "opencode/commands/sdd-new.md.j2",
+        ".opencode/commands/sdd-new.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/commands/judgment-day.md.j2",
+        ".opencode/commands/judgment-day.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/commands/review.md.j2",
+        ".opencode/commands/review.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/commands/handoff.md.j2",
+        ".opencode/commands/handoff.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    # SDD phase sub-agents
+    UpdateEntry(
+        "opencode/agents/sdd-explorer.md.j2",
+        ".opencode/agents/sdd-explorer.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/agents/sdd-proposer.md.j2",
+        ".opencode/agents/sdd-proposer.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/agents/sdd-speccer.md.j2",
+        ".opencode/agents/sdd-speccer.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/agents/sdd-designer.md.j2",
+        ".opencode/agents/sdd-designer.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/agents/sdd-task-planner.md.j2",
+        ".opencode/agents/sdd-task-planner.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/agents/sdd-verifier.md.j2",
+        ".opencode/agents/sdd-verifier.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
+    UpdateEntry(
+        "opencode/agents/sdd-archiver.md.j2",
+        ".opencode/agents/sdd-archiver.md",
+        UpdateStrategy.SKIP_DEFAULT,
+    ),
 ]
 
 
@@ -115,8 +229,19 @@ def _resolve_only_category(only: str) -> UpdateStrategy:
     try:
         return _ONLY_CATEGORY_ALIASES[normalized]
     except KeyError as exc:
-        allowed = ", ".join(["all", "marker-merge", "json-merge", "overwrite", "skip-default", "create-if-missing"])
-        raise ValueError(f"Unknown update category: {only}. Allowed values: {allowed}") from exc
+        allowed = ", ".join(
+            [
+                "all",
+                "marker-merge",
+                "json-merge",
+                "overwrite",
+                "skip-default",
+                "create-if-missing",
+            ]
+        )
+        raise ValueError(
+            f"Unknown update category: {only}. Allowed values: {allowed}"
+        ) from exc
 
 
 def _select_manifest_entries(only: str | None) -> list[UpdateEntry]:
@@ -146,7 +271,9 @@ def run_update(
         entries = _select_manifest_entries(only)
 
         for entry in entries:
-            result = _process_entry(entry, root, engine, context, dry_run, force_commands)
+            result = _process_entry(
+                entry, root, engine, context, dry_run, force_commands
+            )
             summary.results.append(result)
             _print_result(result, dry_run)
 
@@ -189,13 +316,22 @@ def _process_entry(
         elif entry.strategy == UpdateStrategy.CREATE_IF_MISSING:
             return _handle_create_if_missing(entry, target, content, dry_run)
         else:
-            return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=f"Unknown strategy: {entry.strategy}")
+            return UpdateResult(
+                entry.output_path,
+                entry.strategy,
+                "ERROR",
+                warning=f"Unknown strategy: {entry.strategy}",
+            )
 
     except Exception as exc:
-        return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=str(exc))
+        return UpdateResult(
+            entry.output_path, entry.strategy, "ERROR", warning=str(exc)
+        )
 
 
-def _handle_marker_merge(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
+def _handle_marker_merge(
+    entry: UpdateEntry, target: Path, content: str, dry_run: bool
+) -> UpdateResult:
     content_clean = content
     if MARKER_START in content and MARKER_END in content:
         start_idx = content.find(MARKER_START)
@@ -207,7 +343,13 @@ def _handle_marker_merge(entry: UpdateEntry, target: Path, content: str, dry_run
 
     if not target.exists():
         if not dry_run:
-            result = write_file(target, content_clean, force=False, use_markers=True, make_executable=entry.make_executable)
+            result = write_file(
+                target,
+                content_clean,
+                force=False,
+                use_markers=True,
+                make_executable=entry.make_executable,
+            )
             return UpdateResult(entry.output_path, entry.strategy, result.upper())
         else:
             return UpdateResult(entry.output_path, entry.strategy, "CREATED")
@@ -220,31 +362,63 @@ def _handle_marker_merge(entry: UpdateEntry, target: Path, content: str, dry_run
 
     if MARKER_START in existing_content and MARKER_END in existing_content:
         if not dry_run:
-            result = write_file(target, content_clean, force=False, use_markers=True, make_executable=entry.make_executable)
-            return UpdateResult(entry.output_path, entry.strategy, result.upper(), warning=warnings[0] if warnings else None)
+            result = write_file(
+                target,
+                content_clean,
+                force=False,
+                use_markers=True,
+                make_executable=entry.make_executable,
+            )
+            return UpdateResult(
+                entry.output_path,
+                entry.strategy,
+                result.upper(),
+                warning=warnings[0] if warnings else None,
+            )
         else:
-            return UpdateResult(entry.output_path, entry.strategy, "UPDATED", warning=warnings[0] if warnings else None)
+            return UpdateResult(
+                entry.output_path,
+                entry.strategy,
+                "UPDATED",
+                warning=warnings[0] if warnings else None,
+            )
     else:
-        return UpdateResult(entry.output_path, entry.strategy, "SKIPPED", warning="No markers found")
+        return UpdateResult(
+            entry.output_path, entry.strategy, "SKIPPED", warning="No markers found"
+        )
 
 
-def _handle_json_merge(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
+def _handle_json_merge(
+    entry: UpdateEntry, target: Path, content: str, dry_run: bool
+) -> UpdateResult:
     try:
         try:
             template_data = json.loads(content)
         except json.JSONDecodeError as e:
-            return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=f"Invalid JSON in template: {e}")
+            return UpdateResult(
+                entry.output_path,
+                entry.strategy,
+                "ERROR",
+                warning=f"Invalid JSON in template: {e}",
+            )
 
         if not target.exists():
             if not dry_run:
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(json.dumps(template_data, indent=4) + "\n", encoding="utf-8")
+                target.write_text(
+                    json.dumps(template_data, indent=4) + "\n", encoding="utf-8"
+                )
             return UpdateResult(entry.output_path, entry.strategy, "CREATED")
 
         try:
             existing_data = json.loads(target.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
-            return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=f"Invalid JSON in existing file: {e}")
+            return UpdateResult(
+                entry.output_path,
+                entry.strategy,
+                "ERROR",
+                warning=f"Invalid JSON in existing file: {e}",
+            )
 
         merged = deep_merge_json(existing_data, template_data)
 
@@ -254,12 +428,22 @@ def _handle_json_merge(entry: UpdateEntry, target: Path, content: str, dry_run: 
         return UpdateResult(entry.output_path, entry.strategy, "UPDATED")
 
     except Exception as exc:
-        return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=str(exc))
+        return UpdateResult(
+            entry.output_path, entry.strategy, "ERROR", warning=str(exc)
+        )
 
 
-def _handle_overwrite(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
+def _handle_overwrite(
+    entry: UpdateEntry, target: Path, content: str, dry_run: bool
+) -> UpdateResult:
     if not dry_run:
-        result = write_file(target, content, force=True, use_markers=False, make_executable=entry.make_executable)
+        result = write_file(
+            target,
+            content,
+            force=True,
+            use_markers=False,
+            make_executable=entry.make_executable,
+        )
         return UpdateResult(entry.output_path, entry.strategy, result.upper())
     else:
         if target.exists():
@@ -268,19 +452,34 @@ def _handle_overwrite(entry: UpdateEntry, target: Path, content: str, dry_run: b
             return UpdateResult(entry.output_path, entry.strategy, "CREATED")
 
 
-def _handle_skip_default(entry: UpdateEntry, target: Path, content: str, dry_run: bool, force_commands: bool) -> UpdateResult:
+def _handle_skip_default(
+    entry: UpdateEntry, target: Path, content: str, dry_run: bool, force_commands: bool
+) -> UpdateResult:
     if not force_commands:
-        return UpdateResult(entry.output_path, entry.strategy, "SKIPPED", warning="use --force-commands to update")
+        return UpdateResult(
+            entry.output_path,
+            entry.strategy,
+            "SKIPPED",
+            warning="use --force-commands to update",
+        )
     else:
         return _handle_overwrite(entry, target, content, dry_run)
 
 
-def _handle_create_if_missing(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
+def _handle_create_if_missing(
+    entry: UpdateEntry, target: Path, content: str, dry_run: bool
+) -> UpdateResult:
     if target.exists():
         return UpdateResult(entry.output_path, entry.strategy, "SKIPPED")
 
     if not dry_run:
-        result = write_file(target, content, force=False, use_markers=False, make_executable=entry.make_executable)
+        result = write_file(
+            target,
+            content,
+            force=False,
+            use_markers=False,
+            make_executable=entry.make_executable,
+        )
         return UpdateResult(entry.output_path, entry.strategy, result.upper())
 
     return UpdateResult(entry.output_path, entry.strategy, "CREATED")
@@ -302,7 +501,10 @@ def _print_result(result: UpdateResult, dry_run: bool):
 
 def _print_summary(summary: UpdateSummary, dry_run: bool):
     prefix = "[DRY RUN] " if dry_run else ""
-    print(f"\n{prefix}Done. ✓ {summary.updated_count} updated / ⊘ {summary.skipped_count} skipped", end="")
+    print(
+        f"\n{prefix}Done. ✓ {summary.updated_count} updated / ⊘ {summary.skipped_count} skipped",
+        end="",
+    )
     if summary.error_count > 0:
         print(f" / ✗ {summary.error_count} errors")
     else:

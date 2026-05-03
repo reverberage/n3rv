@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 
 from nerv.init.registry import (
     SkillEntry,
@@ -17,6 +16,7 @@ from nerv.init.registry import (
 # --------------------------------------------------------------------------- #
 # _parse_frontmatter
 # --------------------------------------------------------------------------- #
+
 
 def test_parse_frontmatter_with_valid_yaml():
     content = "---\nname: my-skill\ndescription: Does things\n---\n\n## Body"
@@ -54,7 +54,7 @@ SKILL_CONTENT = """\
 name: test-skill
 description: A test skill
 when_to_use: When you want to test things
-model: haiku
+model: low
 hub-skill-ids: [review, reasoning]
 ---
 
@@ -76,55 +76,50 @@ def _make_skill_dir(tmp_path: Path, subpath: str, content: str) -> Path:
     return skill_file
 
 
-def test_scan_finds_valid_skills(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
-    # Patch to only scan local directory
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_scan_finds_valid_skills(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 1
     entry = registry.entries[0]
     assert entry.name == "test-skill"
     assert entry.description == "A test skill"
-    assert entry.model == "haiku"
+    assert entry.model == "low"
     assert entry.hub_skill_ids == ["review", "reasoning"]
 
 
-def test_scan_skips_no_frontmatter(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/plain-skill", SKILL_NO_FRONTMATTER)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_scan_skips_no_frontmatter(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/plain-skill", SKILL_NO_FRONTMATTER)
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 0
 
 
-def test_scan_skips_missing_description(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/no-desc", SKILL_MISSING_DESCRIPTION)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_scan_skips_missing_description(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/no-desc", SKILL_MISSING_DESCRIPTION)
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 0
 
 
-def test_scan_empty_dir(tmp_path: Path, monkeypatch):
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_scan_empty_dir(tmp_path: Path):
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 0
 
 
-def test_scan_multiple_skills(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/skill-a", SKILL_CONTENT)
-    content_b = SKILL_CONTENT.replace("test-skill", "skill-b").replace("A test skill", "Skill B")
-    _make_skill_dir(tmp_path, ".nerv/skills/skill-b", content_b)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_scan_multiple_skills(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/skill-a", SKILL_CONTENT)
+    content_b = SKILL_CONTENT.replace("test-skill", "skill-b").replace(
+        "A test skill", "Skill B"
+    )
+    _make_skill_dir(tmp_path, ".opencode/skills/skill-b", content_b)
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 2
 
 
-def test_scan_deduplicates_symlinks(tmp_path: Path, monkeypatch):
-    original = _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
+def test_scan_deduplicates_symlinks(tmp_path: Path):
+    original = _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     link_dir = tmp_path / ".github" / "skills" / "test-skill"
     link_dir.mkdir(parents=True)
     link = link_dir / "SKILL.md"
     link.symlink_to(original)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 1
 
@@ -133,25 +128,23 @@ def test_scan_deduplicates_symlinks(tmp_path: Path, monkeypatch):
 # SkillRegistry.find_by_skill_id
 # --------------------------------------------------------------------------- #
 
-def test_find_by_skill_id_match(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+
+def test_find_by_skill_id_match(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     registry = SkillRegistry.scan(tmp_path)
     results = registry.find_by_skill_id("review")
     assert len(results) == 1
     assert results[0].name == "test-skill"
 
 
-def test_find_by_skill_id_no_match(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_find_by_skill_id_no_match(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     registry = SkillRegistry.scan(tmp_path)
     results = registry.find_by_skill_id("implementation")
     assert results == []
 
 
-def test_find_by_skill_id_empty_registry(tmp_path: Path, monkeypatch):
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_find_by_skill_id_empty_registry(tmp_path: Path):
     registry = SkillRegistry.scan(tmp_path)
     assert registry.find_by_skill_id("anything") == []
 
@@ -160,9 +153,9 @@ def test_find_by_skill_id_empty_registry(tmp_path: Path, monkeypatch):
 # SkillEntry.as_context_item
 # --------------------------------------------------------------------------- #
 
-def test_as_context_item_structure(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+
+def test_as_context_item_structure(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     registry = SkillRegistry.scan(tmp_path)
     item = registry.entries[0].as_context_item()
     assert item["content"] == SKILL_CONTENT
@@ -175,15 +168,15 @@ def test_as_context_item_structure(tmp_path: Path, monkeypatch):
 # SkillRegistry.to_markdown
 # --------------------------------------------------------------------------- #
 
+
 def test_to_markdown_empty():
     registry = SkillRegistry([])
     md = registry.to_markdown()
     assert "_No agentskills.io skills found._" in md
 
 
-def test_to_markdown_with_entries(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_to_markdown_with_entries(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     registry = SkillRegistry.scan(tmp_path)
     md = registry.to_markdown()
     assert "test-skill" in md
@@ -208,9 +201,9 @@ def test_to_markdown_truncates_long_descriptions():
 # write_registry
 # --------------------------------------------------------------------------- #
 
-def test_write_registry_creates_file(tmp_path: Path, monkeypatch):
-    _make_skill_dir(tmp_path, ".nerv/skills/test-skill", SKILL_CONTENT)
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+
+def test_write_registry_creates_file(tmp_path: Path):
+    _make_skill_dir(tmp_path, ".opencode/skills/test-skill", SKILL_CONTENT)
     out = write_registry(tmp_path)
     assert out.exists()
     assert out.name == "skill-registry.md"
@@ -219,8 +212,7 @@ def test_write_registry_creates_file(tmp_path: Path, monkeypatch):
     assert "test-skill" in content
 
 
-def test_write_registry_empty_project(tmp_path: Path, monkeypatch):
-    monkeypatch.setattr("nerv.init.registry._USER_SKILL_DIRS", [])
+def test_write_registry_empty_project(tmp_path: Path):
     out = write_registry(tmp_path)
     assert out.exists()
     content = out.read_text()

@@ -8,7 +8,23 @@ NERV provides invisible engineering infrastructure for AI agents through three i
 |---------|----------|----------------|
 | `nerv` | CLI for init, update, hub start, memory commands | `src/nerv/cli.py:main()` |
 | `nerv-memory` | MCP server exposing memory tools | `src/nerv/mcp/memory_server.py:main()` |
-| `nerv-hub` | A2A hub server + MCP hub tools | `src/nerv/a2a/hub.py:main()` |
+| `nerv-hub` | MCP server exposing hub delegation tools | `src/nerv/mcp/hub_server.py:main()` |
+
+## Evangelion Concept Map
+
+The nerv project draws its name and thematic structure from *Neon Genesis Evangelion*. Every subsystem maps to an Evangelion concept. Understanding these mappings reveals the design philosophy:
+
+| Evangelion Concept | NERV Subsystem | Why |
+|---|---|---|
+| **MAGI Supercomputer** | Memory Service | Three independent minds (ChromaDB, SQLite, SessionManager) reach consensus — just as Melchior, Balthasar, Casper vote on NERV's decisions |
+| **EVA Units** | AI Agents | Purpose-built entities dispatched from the Command Center (A2A Hub) to execute missions (tasks) |
+| **Geofront** | `.nerv/` directory | Hidden infrastructure beneath the workspace — houses memory stores, hub state, and configuration |
+| **Command Center** | A2A Hub + MCP Hub Server | Central dispatch. Routes tasks to agents by skill ID, monitors execution, collects results |
+| **Human Instrumentality Project** | SDD Workflow | The 8-phase grand protocol for achieving unity between human intent and machine output |
+| **SEELE** | SDD Verify / Judgment Day | The oversight council that reviews outputs, passes verdicts, and ensures quality |
+| **AT Field** | Security boundaries | Absolute isolation: localhost-only, read-only safe mode, no hardcoded secrets |
+
+For the full concept map including LCL (knowledge layer), Entry Plug (context), S² Engine (workflow engine), Dummy Plug (automation), and the three MAGI personalities, see [EVANGELION.md](../EVANGELION.md).
 
 ## System Overview
 
@@ -79,7 +95,7 @@ Typer-based CLI with three subcommands:
 
 Key files:
 - `src/nerv/cli.py` — CLI entry point
-- `src/nerv/init/run_init.py` — Init orchestration
+- `src/nerv/init/__init__.py` — Init orchestration
 - `src/nerv/init/detector.py` — Stack detection
 - `src/nerv/init/renderer.py` — Jinja2 template rendering
 - `src/nerv/init/registry.py` — SkillRegistry (scans SKILL.md files)
@@ -195,7 +211,7 @@ hub:
 project: <project-name>
 ```
 
-Skill registry (`src/nerv/init/registry.py`) scans `.nerv/skills/*/SKILL.md` files and extracts skill metadata (id, name, description, hub_skill_ids).
+Skill registry (`src/nerv/init/registry.py`) scans `.opencode/skills/*/SKILL.md` files and extracts skill metadata (id, name, description, hub_skill_ids).
 
 TaskRouter (`src/nerv/a2a/router.py`) matches `skill_id` from delegation request to registered agents, with keyword-based fallback inference.
 
@@ -207,7 +223,7 @@ TaskRouter (`src/nerv/a2a/router.py`) matches `skill_id` from delegation request
 nerv init --stack python
   → detector.py detects stack
   → renderer.py renders templates from init/templates/
-  → Creates: AGENTS.md, .nerv/a2a-config.yaml, .nerv/skills/*, mcp.json, .githooks/pre-push
+  → Creates: AGENTS.md, opencode.json, .opencode/skills/*, .opencode/commands/*, .opencode/agents/*, .nerv/a2a-config.yaml, .githooks/pre-push
 ```
 
 ### Saving a Memory

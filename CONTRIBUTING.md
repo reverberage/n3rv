@@ -77,7 +77,7 @@ when_to_use: "When to trigger this skill"
 allowed-tools:
   - Read
   - Write
-  - mcp__invencible-memory__memory_save
+  - mcp__nerv-memory__memory_save
 model: haiku|sonnet
 effort: low|medium|high
 user-invocable: false
@@ -109,7 +109,7 @@ hub-skill-ids: [<optional, for A2A delegation>]
 |---------|----------------|
 | `nerv` | `src/nerv/cli.py:main()` |
 | `nerv-memory` | `src/nerv/mcp/memory_server.py:main()` |
-| `nerv-hub` | `src/nerv/a2a/hub.py:main()` |
+| `nerv-hub` | `src/nerv/mcp/hub_server.py:main()` |
 
 ## Environment Variables
 

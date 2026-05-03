@@ -44,10 +44,23 @@ def test_memory_list_displays_filtered_memories() -> None:
         ],
     }
 
-    with patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()), patch(
-        "nerv.cli_memory.MemoryService", return_value=mock_service
+    with (
+        patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()),
+        patch("nerv.cli_memory.MemoryService", return_value=mock_service),
     ):
-        result = runner.invoke(app, ["memory", "list", "--type", "decision", "--scope", "project", "--limit", "5"])
+        result = runner.invoke(
+            app,
+            [
+                "memory",
+                "list",
+                "--type",
+                "decision",
+                "--scope",
+                "project",
+                "--limit",
+                "5",
+            ],
+        )
 
     assert result.exit_code == 0
     assert "Auth strategy" in result.stdout
@@ -60,8 +73,9 @@ def test_memory_list_shows_empty_message() -> None:
     mock_service = Mock()
     mock_service.memory_context.return_value = {"count": 0, "memories": []}
 
-    with patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()), patch(
-        "nerv.cli_memory.MemoryService", return_value=mock_service
+    with (
+        patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()),
+        patch("nerv.cli_memory.MemoryService", return_value=mock_service),
     ):
         result = runner.invoke(app, ["memory", "list"])
 
@@ -84,12 +98,23 @@ def test_memory_search_displays_results() -> None:
         "nudge": None,
     }
 
-    with patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()), patch(
-        "nerv.cli_memory.MemoryService", return_value=mock_service
+    with (
+        patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()),
+        patch("nerv.cli_memory.MemoryService", return_value=mock_service),
     ):
         result = runner.invoke(
             app,
-            ["memory", "search", "authentication", "--type", "decision", "--keyword", "refresh", "--limit", "3"],
+            [
+                "memory",
+                "search",
+                "authentication",
+                "--type",
+                "decision",
+                "--keyword",
+                "refresh",
+                "--limit",
+                "3",
+            ],
         )
 
     assert result.exit_code == 0
@@ -112,8 +137,9 @@ def test_memory_stats_displays_sections() -> None:
         "by_agent": {"claude-code": 3, "copilot-cli": 1},
     }
 
-    with patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()), patch(
-        "nerv.cli_memory.MemoryService", return_value=mock_service
+    with (
+        patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()),
+        patch("nerv.cli_memory.MemoryService", return_value=mock_service),
     ):
         result = runner.invoke(app, ["memory", "stats"])
 
@@ -128,8 +154,9 @@ def test_memory_command_handles_store_errors() -> None:
     mock_service = Mock()
     mock_service.memory_context.side_effect = RuntimeError("memory unavailable")
 
-    with patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()), patch(
-        "nerv.cli_memory.MemoryService", return_value=mock_service
+    with (
+        patch("nerv.cli_memory.load_runtime_settings", return_value=Mock()),
+        patch("nerv.cli_memory.MemoryService", return_value=mock_service),
     ):
         result = runner.invoke(app, ["memory", "list"])
 

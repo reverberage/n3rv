@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import logging
 from typing import TYPE_CHECKING
 
-from nerv.models.a2a import AgentSkill, NervAgentCard, TaskState
-from nerv.mcp.client import HubMCPBridge
+from nerv.models.a2a import AgentSkill, NervAgentCard
+from nerv.mcp.memory_service import MemoryService
 
 if TYPE_CHECKING:
     from nerv.init.registry import SkillRegistry
@@ -32,11 +32,11 @@ class TaskRouter:
         self,
         *,
         cards: dict[str, NervAgentCard],
-        mcp: HubMCPBridge,
+        memory_service: MemoryService | None = None,
         registry: SkillRegistry | None = None,
     ) -> None:
         self.cards = cards
-        self.mcp = mcp
+        self.memory_service = memory_service
         self.registry = registry
 
     async def route(
@@ -67,18 +67,34 @@ class TaskRouter:
         agent_id, card, skill = candidates[0]
 
         logger.debug("memory_search for context agent=%s", agent_id)
-        search_response = await self.mcp.memory_search(query=description[:1000], limit=5)
-        context: list[dict] = search_response["results"]
+        if self.memory_service:
+            search_response = self.memory_service.memory_search(
+                query=description[:1000], limit=5
+            )
+            context: list[dict] = search_response["results"]
+        else:
+            context = []
 
         if self.registry:
             skill_entries = self.registry.find_by_skill_id(skill_id)
             skill_context = [e.as_context_item() for e in skill_entries]
             if skill_context:
-                logger.debug("injecting %d skill doc(s) for skill=%s", len(skill_context), skill_id)
+                logger.debug(
+                    "injecting %d skill doc(s) for skill=%s",
+                    len(skill_context),
+                    skill_id,
+                )
             context = skill_context + context
 
-        logger.info("routed skill=%s -> agent=%s context_items=%d", skill_id, agent_id, len(context))
-        return RoutingDecision(agent_id=agent_id, card=card, skill=skill, context=context)
+        logger.info(
+            "routed skill=%s -> agent=%s context_items=%d",
+            skill_id,
+            agent_id,
+            len(context),
+        )
+        return RoutingDecision(
+            agent_id=agent_id, card=card, skill=skill, context=context
+        )
 
     def _infer_skill(self, description: str) -> str:
         """Infer skill_id from description keywords.

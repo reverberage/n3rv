@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import re
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
@@ -58,7 +57,8 @@ class HubTaskRecord(BaseModel):
                     "parts": [{"kind": "text", "text": artifact.text}],
                 }
                 for artifact in self.artifacts
-            ] or None,
+            ]
+            or None,
             "metadata": {
                 "requesting_agent": self.requesting_agent,
                 "assigned_agent": self.assigned_agent,
@@ -144,7 +144,9 @@ class HubStateStore:
         tasks = []
         for task_file in self.tasks_dir.glob("task-*.json"):
             try:
-                task = HubTaskRecord.model_validate_json(task_file.read_text(encoding="utf-8"))
+                task = HubTaskRecord.model_validate_json(
+                    task_file.read_text(encoding="utf-8")
+                )
                 tasks.append(task)
             except Exception:
                 continue
@@ -174,7 +176,9 @@ class HubStateStore:
                 last_mtime = current_mtime
 
                 try:
-                    task = HubTaskRecord.model_validate_json(path.read_text(encoding="utf-8"))
+                    task = HubTaskRecord.model_validate_json(
+                        path.read_text(encoding="utf-8")
+                    )
                     yield {
                         "id": task.id,
                         "state": task.state.value,

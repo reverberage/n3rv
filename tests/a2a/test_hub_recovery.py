@@ -36,10 +36,10 @@ async def test_recover_completed_task_is_skipped(hub: A2AHub):
         description="Completed task",
     )
     hub.state.update_task(task.id, state=TaskState.COMPLETED)
-    
+
     # Run recovery
     await hub._recover_tasks()
-    
+
     # Task should still be completed
     recovered_task = hub.state.load_task(task.id)
     assert recovered_task is not None
@@ -75,10 +75,10 @@ async def test_recover_working_task_marks_as_failed(hub: A2AHub):
         description="Working task",
     )
     hub.state.update_task(task.id, state=TaskState.WORKING)
-    
+
     # Run recovery
     await hub._recover_tasks()
-    
+
     # Task should be marked as failed
     recovered_task = hub.state.load_task(task.id)
     assert recovered_task is not None
@@ -98,10 +98,10 @@ async def test_recover_canceled_task_is_skipped(hub: A2AHub):
         description="Canceled task",
     )
     hub.state.update_task(task.id, state=TaskState.CANCELED)
-    
+
     # Run recovery
     await hub._recover_tasks()
-    
+
     # Task should still be canceled
     recovered_task = hub.state.load_task(task.id)
     assert recovered_task is not None
@@ -118,10 +118,10 @@ async def test_recover_failed_task_is_skipped(hub: A2AHub):
         description="Failed task",
     )
     hub.state.update_task(task.id, state=TaskState.FAILED, error_code="OTHER_ERROR")
-    
+
     # Run recovery
     await hub._recover_tasks()
-    
+
     # Task should still be failed with original error code
     recovered_task = hub.state.load_task(task.id)
     assert recovered_task is not None
@@ -146,7 +146,7 @@ async def test_recover_mixed_tasks(hub: A2AHub):
         description="Working task",
     )
     hub.state.update_task(working_task.id, state=TaskState.WORKING)
-    
+
     completed_task = hub.state.create_task(
         requesting_agent="agent1",
         assigned_agent="agent2",
@@ -154,10 +154,10 @@ async def test_recover_mixed_tasks(hub: A2AHub):
         description="Completed task",
     )
     hub.state.update_task(completed_task.id, state=TaskState.COMPLETED)
-    
+
     # Run recovery
     await hub._recover_tasks()
-    
+
     # Submitted task should be rerouted
     recovered_submitted = hub.state.load_task(submitted_task.id)
     assert recovered_submitted.state == TaskState.WORKING
@@ -167,7 +167,7 @@ async def test_recover_mixed_tasks(hub: A2AHub):
     recovered_working = hub.state.load_task(working_task.id)
     assert recovered_working.state == TaskState.FAILED
     assert recovered_working.error_code == "RESTART_RECOVERY"
-    
+
     # Completed task should be unchanged
     recovered_completed = hub.state.load_task(completed_task.id)
     assert recovered_completed.state == TaskState.COMPLETED

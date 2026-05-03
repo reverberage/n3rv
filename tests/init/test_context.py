@@ -19,7 +19,7 @@ def test_stack_enum_values():
 def test_project_context_build():
     """Test ProjectContext.build() creates valid context with auto-populated fields."""
     ctx = ProjectContext.build(project_name="myapp", stack=Stack.PYTHON)
-    
+
     assert ctx.project_name == "myapp"
     assert ctx.stack == Stack.PYTHON
     assert isinstance(ctx.nerv_version, str)
@@ -32,7 +32,7 @@ def test_project_context_to_dict():
     """Test to_dict() returns correct structure for Jinja2 rendering."""
     ctx = ProjectContext.build(project_name="testproject", stack=Stack.NODE)
     result = ctx.to_dict()
-    
+
     assert result["project_name"] == "testproject"
     assert result["stack"] == "node"  # Stack enum converted to string
     assert "nerv_version" in result

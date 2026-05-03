@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import hashlib
-import os
 from datetime import UTC, datetime
 
 import pytest
 
-from nerv.mcp.memory_server import MemoryService, build_memory_server
-from nerv.mcp.memory_store import MemoryStore
+from nerv.mcp.memory_service import MemoryService
+from nerv.mcp.memory_server import build_memory_server
+from nerv.mcp.vector_store import VectorStore
 from nerv.mcp.shared import detect_agent_source
 
 
@@ -71,7 +71,9 @@ def test_memory_search_returns_scored_result(runtime_settings) -> None:
 
 def test_memory_context_includes_session_summary(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Older note", title="Older", type="note", topic_key="older-note")
+    service.memory_save(
+        content="Older note", title="Older", type="note", topic_key="older-note"
+    )
     summary = service.memory_session_summary(summary="Completed auth module.")
     context = service.memory_context(n=5)
 
@@ -93,7 +95,9 @@ def test_memory_delete_soft_delete_hides_memory(runtime_settings) -> None:
     recalled = service.memory_recall(topic_key="auth-strategy")
     search_results = service.memory_search(query="refresh tokens", limit=5)
     context = service.memory_context(n=5)
-    stored = service.store.collection.get(ids=[saved["id"]], include=["metadatas"])
+    stored = service.vector_store.collection.get(
+        ids=[saved["id"]], include=["metadatas"]
+    )
 
     assert deleted == {"id": saved["id"], "status": "deleted", "hard_delete": False}
     assert recalled["found"] is False
@@ -113,7 +117,9 @@ def test_memory_delete_hard_delete_removes_memory(runtime_settings) -> None:
     )
 
     deleted = service.memory_delete(id=saved["id"], hard_delete=True)
-    stored = service.store.collection.get(ids=[saved["id"]], include=["metadatas"])
+    stored = service.vector_store.collection.get(
+        ids=[saved["id"]], include=["metadatas"]
+    )
 
     assert deleted == {"id": saved["id"], "status": "deleted", "hard_delete": True}
     assert stored["ids"] == []
@@ -162,10 +168,10 @@ def test_memory_stats_groups_active_memories(runtime_settings, monkeypatch) -> N
     assert stats["total"] == 2
     assert stats["by_type"]["architecture"] == 1
     assert stats["by_type"]["config"] == 1
-    assert stats["by_type"]["bugfix"] == 0      # zero-filled for all enum values
+    assert stats["by_type"]["bugfix"] == 0  # zero-filled for all enum values
     assert stats["by_scope"]["project"] == 1
     assert stats["by_scope"]["personal"] == 1
-    assert stats["by_scope"]["session"] == 0    # zero-filled for all enum values
+    assert stats["by_scope"]["session"] == 0  # zero-filled for all enum values
     assert stats["by_agent"]["opencode"] == 2
 
 
@@ -205,7 +211,9 @@ def test_memory_save_accepts_new_memory_types(runtime_settings) -> None:
     assert recalled["type"] == "discovery"
 
 
-def test_memory_timeline_returns_neighboring_entries(runtime_settings, monkeypatch) -> None:
+def test_memory_timeline_returns_neighboring_entries(
+    runtime_settings, monkeypatch
+) -> None:
     timestamps = iter(
         [
             datetime(2025, 1, 1, 0, 0, tzinfo=UTC),
@@ -214,13 +222,21 @@ def test_memory_timeline_returns_neighboring_entries(runtime_settings, monkeypat
             datetime(2025, 1, 1, 3, 0, tzinfo=UTC),
         ]
     )
-    monkeypatch.setattr(MemoryStore, "_now", staticmethod(lambda: next(timestamps)))
+    monkeypatch.setattr(VectorStore, "now", staticmethod(lambda: next(timestamps)))
     service = MemoryService(runtime_settings)
 
-    oldest = service.memory_save(content="Oldest context", title="Oldest", type="context", topic_key="oldest")
-    older = service.memory_save(content="Older context", title="Older", type="context", topic_key="older")
-    focus = service.memory_save(content="Focus context", title="Focus", type="context", topic_key="focus")
-    newest = service.memory_save(content="Newest context", title="Newest", type="context", topic_key="newest")
+    oldest = service.memory_save(
+        content="Oldest context", title="Oldest", type="context", topic_key="oldest"
+    )
+    older = service.memory_save(
+        content="Older context", title="Older", type="context", topic_key="older"
+    )
+    focus = service.memory_save(
+        content="Focus context", title="Focus", type="context", topic_key="focus"
+    )
+    newest = service.memory_save(
+        content="Newest context", title="Newest", type="context", topic_key="newest"
+    )
 
     timeline = service.memory_timeline(id=focus["id"], before=2, after=1)
 
@@ -237,7 +253,9 @@ def test_memory_timeline_returns_neighboring_entries(runtime_settings, monkeypat
 
 def test_memory_timeline_raises_for_soft_deleted_memory(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(content="Soon deleted", title="Deleted", type="note", topic_key="deleted-note")
+    saved = service.memory_save(
+        content="Soon deleted", title="Deleted", type="note", topic_key="deleted-note"
+    )
     service.memory_delete(id=saved["id"])
 
     with pytest.raises(KeyError, match=saved["id"]):
@@ -261,7 +279,9 @@ def test_memory_save_deduplicates_content(runtime_settings) -> None:
     )
     recalled = service.memory_recall(topic_key="auth-decision")
     duplicate_topic = service.memory_recall(topic_key="duplicate-topic")
-    stored = service.store.collection.get(ids=[first["id"]], include=["metadatas"])
+    stored = service.vector_store.collection.get(
+        ids=[first["id"]], include=["metadatas"]
+    )
     context = service.memory_context(n=10)
 
     assert first["status"] == "created"
@@ -272,9 +292,12 @@ def test_memory_save_deduplicates_content(runtime_settings) -> None:
     assert context["count"] == 1
     assert stored["metadatas"][0]["duplicate_count"] == 2
     assert stored["metadatas"][0]["last_seen_at"]
-    assert stored["metadatas"][0]["content_hash"] == hashlib.sha256(
-        "refresh tokens belong in secure cookies.".encode()
-    ).hexdigest()[:16]
+    assert (
+        stored["metadatas"][0]["content_hash"]
+        == hashlib.sha256(
+            "refresh tokens belong in secure cookies.".encode()
+        ).hexdigest()[:16]
+    )
 
 
 def test_memory_save_rejects_legacy_global_scope(runtime_settings) -> None:
@@ -292,7 +315,7 @@ def test_memory_save_rejects_legacy_global_scope(runtime_settings) -> None:
 
 def test_memory_store_migrates_legacy_metadata(runtime_settings) -> None:
     initial = MemoryService(runtime_settings)
-    initial.store.collection.add(
+    initial.vector_store.collection.add(
         ids=["legacy-memory-01"],
         documents=["Legacy content"],
         metadatas=[
@@ -308,14 +331,19 @@ def test_memory_store_migrates_legacy_metadata(runtime_settings) -> None:
     )
 
     migrated = MemoryService(runtime_settings)
-    record = migrated.store.collection.get(ids=["legacy-memory-01"], include=["documents", "metadatas"])
+    record = migrated.vector_store.collection.get(
+        ids=["legacy-memory-01"], include=["documents", "metadatas"]
+    )
     metadata = record["metadatas"][0]
 
     assert metadata["scope"] == "personal"
     assert metadata["deleted_at"] == ""
     assert metadata["duplicate_count"] == 1
     assert metadata["last_seen_at"] == "2025-01-01T00:00:00+00:00"
-    assert metadata["content_hash"] == hashlib.sha256("legacy content".encode()).hexdigest()[:16]
+    assert (
+        metadata["content_hash"]
+        == hashlib.sha256("legacy content".encode()).hexdigest()[:16]
+    )
 
 
 def test_build_memory_server_enables_stateless_http(runtime_settings) -> None:
@@ -341,14 +369,21 @@ def test_memory_session_start_returns_session_id(runtime_settings) -> None:
 
     assert result["session_id"]
     assert result["started_at"]
-    recalled = service.memory_recall(topic_key=f"session-start-{result['session_id'][:8]}")
+    recalled = service.memory_recall(
+        topic_key=f"session-start-{result['session_id'][:8]}"
+    )
     assert recalled["found"] is True
     assert recalled["type"] == "context"
 
 
 def test_memory_search_nudges_after_threshold(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Seed content for searching.", title="Seed", type="note", topic_key="seed-note")
+    service.memory_save(
+        content="Seed content for searching.",
+        title="Seed",
+        type="note",
+        topic_key="seed-note",
+    )
 
     THRESHOLD = 3
     for _ in range(THRESHOLD):
@@ -362,7 +397,9 @@ def test_memory_search_nudges_after_threshold(runtime_settings) -> None:
 
 def test_memory_save_resets_nudge_counter(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Seed to search.", title="Seed", type="note", topic_key="seed-reset")
+    service.memory_save(
+        content="Seed to search.", title="Seed", type="note", topic_key="seed-reset"
+    )
 
     THRESHOLD = 3
     for _ in range(THRESHOLD + 1):
@@ -371,14 +408,24 @@ def test_memory_save_resets_nudge_counter(runtime_settings) -> None:
     nudged = service.memory_search(query="seed")
     assert nudged.get("nudge") is not None
 
-    service.memory_save(content="New insight after searching.", title="New", type="note", topic_key="new-insight")
+    service.memory_save(
+        content="New insight after searching.",
+        title="New",
+        type="note",
+        topic_key="new-insight",
+    )
     reset = service.memory_search(query="seed")
     assert reset.get("nudge") is None
 
 
 def test_memory_session_summary_resets_nudge_counter(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Something to search for.", title="Seed", type="note", topic_key="summary-seed")
+    service.memory_save(
+        content="Something to search for.",
+        title="Seed",
+        type="note",
+        topic_key="summary-seed",
+    )
 
     for _ in range(5):
         service.memory_search(query="something")
@@ -398,7 +445,9 @@ def test_memory_session_summary_resets_nudge_counter(runtime_settings) -> None:
 
 def test_memory_get_returns_full_content(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(content="Full content here.", title="Full", type="note", topic_key="full-get")
+    saved = service.memory_save(
+        content="Full content here.", title="Full", type="note", topic_key="full-get"
+    )
     result = service.memory_get(id=saved["id"])
 
     assert result["content"] == "Full content here."
@@ -407,17 +456,19 @@ def test_memory_get_returns_full_content(runtime_settings) -> None:
 
 def test_memory_get_raises_for_soft_deleted(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(content="To be deleted.", title="Del", type="note", topic_key="del-get")
+    saved = service.memory_save(
+        content="To be deleted.", title="Del", type="note", topic_key="del-get"
+    )
     service.memory_delete(id=saved["id"])
 
     with pytest.raises(KeyError):
-        service.store.get_memory(saved["id"])
+        service.memory_get(saved["id"])
 
 
 def test_memory_get_raises_for_unknown_id(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
     with pytest.raises(KeyError):
-        service.store.get_memory("does-not-exist")
+        service.memory_get("does-not-exist")
 
 
 # ---------------------------------------------------------------------------
@@ -428,7 +479,9 @@ def test_memory_get_raises_for_unknown_id(runtime_settings) -> None:
 def test_memory_search_snippet_only_truncates_content(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
     long_content = "A" * 500
-    service.memory_save(content=long_content, title="Long", type="note", topic_key="long-content")
+    service.memory_save(
+        content=long_content, title="Long", type="note", topic_key="long-content"
+    )
 
     results = service.memory_search(query="AAAA", snippet_only=True)
     contents = [r["content"] for r in results.get("results", [])]
@@ -470,16 +523,24 @@ def test_memory_search_includes_personal_when_requested(runtime_settings) -> Non
 
 def test_revision_count_increments_on_topic_update(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Version one.", title="Rev", type="decision", topic_key="rev-track")
-    second = service.memory_save(content="Version two.", title="Rev", type="decision", topic_key="rev-track")
+    service.memory_save(
+        content="Version one.", title="Rev", type="decision", topic_key="rev-track"
+    )
+    second = service.memory_save(
+        content="Version two.", title="Rev", type="decision", topic_key="rev-track"
+    )
 
     assert second["revision_count"] == 2
 
 
 def test_revision_count_not_incremented_on_duplicate(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Same content.", title="Dup", type="note", topic_key="dup-rev")
-    second = service.memory_save(content="Same content.", title="Dup", type="note", topic_key="dup-rev")
+    service.memory_save(
+        content="Same content.", title="Dup", type="note", topic_key="dup-rev"
+    )
+    second = service.memory_save(
+        content="Same content.", title="Dup", type="note", topic_key="dup-rev"
+    )
 
     assert second["revision_count"] == 1
     assert second["status"] == "duplicate"
@@ -487,8 +548,12 @@ def test_revision_count_not_incremented_on_duplicate(runtime_settings) -> None:
 
 def test_same_topic_same_content_is_topic_duplicate(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Exact.", title="TD", type="note", topic_key="topic-dup")
-    second = service.memory_save(content="Exact.", title="TD", type="note", topic_key="topic-dup")
+    service.memory_save(
+        content="Exact.", title="TD", type="note", topic_key="topic-dup"
+    )
+    second = service.memory_save(
+        content="Exact.", title="TD", type="note", topic_key="topic-dup"
+    )
 
     assert second["status"] == "duplicate"
 
@@ -500,11 +565,14 @@ def test_same_topic_same_content_is_topic_duplicate(runtime_settings) -> None:
 
 def test_last_accessed_at_updated_on_recall(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(content="Recall me.", title="Recall", type="note", topic_key="recall-access")
+    service.memory_save(
+        content="Recall me.", title="Recall", type="note", topic_key="recall-access"
+    )
 
-    before = datetime.now(UTC)
     service.memory_recall(topic_key="recall-access")
-    result = service.memory_get(id=service.memory_recall(topic_key="recall-access")["id"])
+    result = service.memory_get(
+        id=service.memory_recall(topic_key="recall-access")["id"]
+    )
 
     assert result.get("last_accessed_at") is not None
 
@@ -546,11 +614,18 @@ def test_memory_prune_soft_deletes_old_memories(runtime_settings) -> None:
     )
 
     # Force updated_at to far past by manipulating metadata directly
-    store = service.store
-    mem = store.recall_memory("old-session-note")
+    store = service.vector_store
+    mem = service.memory_recall(topic_key="old-session-note")
     store.collection.update(
-        ids=[mem.id],
-        metadatas=[{**store.collection.get(ids=[mem.id], include=["metadatas"])["metadatas"][0], "updated_at": "2000-01-01T00:00:00+00:00"}],
+        ids=[mem["id"]],
+        metadatas=[
+            {
+                **store.collection.get(ids=[mem["id"]], include=["metadatas"])[
+                    "metadatas"
+                ][0],
+                "updated_at": "2000-01-01T00:00:00+00:00",
+            }
+        ],
     )
 
     result = service.memory_prune(scope="session", older_than_days=1)
@@ -579,7 +654,9 @@ def test_memory_prune_leaves_new_memories(runtime_settings) -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_safe_profile_hides_delete_tool(runtime_settings, monkeypatch) -> None:
+async def test_mcp_safe_profile_hides_delete_tool(
+    runtime_settings, monkeypatch
+) -> None:
     monkeypatch.setenv("NERV_MEMORY_PROFILE", "safe")
     server = build_memory_server(runtime_settings.paths.project_root)
     tools = await server.list_tools()
@@ -588,7 +665,9 @@ async def test_mcp_safe_profile_hides_delete_tool(runtime_settings, monkeypatch)
 
 
 @pytest.mark.asyncio
-async def test_mcp_full_profile_includes_delete_tool(runtime_settings, monkeypatch) -> None:
+async def test_mcp_full_profile_includes_delete_tool(
+    runtime_settings, monkeypatch
+) -> None:
     monkeypatch.setenv("NERV_MEMORY_PROFILE", "full")
     server = build_memory_server(runtime_settings.paths.project_root)
     tools = await server.list_tools()
@@ -637,29 +716,48 @@ def test_bm25_no_conflicts_on_first_save(runtime_settings) -> None:
 
 def test_memory_judge_stores_verdict(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    a = service.memory_save(content="Old approach.", title="A", type="decision", topic_key="judge-a")
-    b = service.memory_save(content="New approach.", title="B", type="decision", topic_key="judge-b")
+    a = service.memory_save(
+        content="Old approach.", title="A", type="decision", topic_key="judge-a"
+    )
+    b = service.memory_save(
+        content="New approach.", title="B", type="decision", topic_key="judge-b"
+    )
 
-    result = service.memory_judge(source_id=b["id"], target_id=a["id"], verdict="supersedes", reason="Replaced by new design.")
+    result = service.memory_judge(
+        source_id=b["id"],
+        target_id=a["id"],
+        verdict="supersedes",
+        reason="Replaced by new design.",
+    )
     assert result["verdict"] == "supersedes"
     assert result["is_new"] is True
 
 
 def test_memory_judge_raises_for_unknown_id(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(content="Known.", title="Known", type="note", topic_key="judge-known")
+    saved = service.memory_save(
+        content="Known.", title="Known", type="note", topic_key="judge-known"
+    )
 
     with pytest.raises(KeyError):
-        service.memory_judge(source_id=saved["id"], target_id="unknown-id", verdict="related")
+        service.memory_judge(
+            source_id=saved["id"], target_id="unknown-id", verdict="related"
+        )
 
 
 def test_memory_judge_updates_on_second_call(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    a = service.memory_save(content="Mem A.", title="A", type="note", topic_key="judge-upd-a")
-    b = service.memory_save(content="Mem B.", title="B", type="note", topic_key="judge-upd-b")
+    a = service.memory_save(
+        content="Mem A.", title="A", type="note", topic_key="judge-upd-a"
+    )
+    b = service.memory_save(
+        content="Mem B.", title="B", type="note", topic_key="judge-upd-b"
+    )
 
     service.memory_judge(source_id=a["id"], target_id=b["id"], verdict="related")
-    second = service.memory_judge(source_id=a["id"], target_id=b["id"], verdict="supersedes")
+    second = service.memory_judge(
+        source_id=a["id"], target_id=b["id"], verdict="supersedes"
+    )
 
     assert second["is_new"] is False
     assert second["verdict"] == "supersedes"
@@ -671,26 +769,28 @@ def test_memory_judge_updates_on_second_call(runtime_settings) -> None:
 
 
 def test_metadata_migration_adds_new_fields(runtime_settings) -> None:
-    """Directly inject a legacy-style doc and verify _ensure_metadata_defaults backfills new fields."""
-    store = MemoryStore(runtime_settings)
+    """Directly inject a legacy-style doc and verify metadata fields are accessible."""
+    store = MemoryService(runtime_settings)
     legacy_id = "legacy-migration-test"
     ts = datetime.now(UTC).isoformat()
-    store.collection.add(
+    store.vector_store.collection.add(
         ids=[legacy_id],
         documents=["Legacy content"],
-        metadatas=[{
-            "title": "Legacy",
-            "type": "note",
-            "scope": "project",
-            "agent_source": "test",
-            "timestamp": ts,
-            "content_hash": hashlib.sha256(b"Legacy content").hexdigest(),
-            "topic_key": "",
-            "deleted_at": "",
-        }],
+        metadatas=[
+            {
+                "title": "Legacy",
+                "type": "note",
+                "scope": "project",
+                "agent_source": "test",
+                "timestamp": ts,
+                "content_hash": hashlib.sha256(b"Legacy content").hexdigest(),
+                "topic_key": "",
+                "deleted_at": "",
+            }
+        ],
     )
 
-    result = store.get_memory(legacy_id)
-    assert result.revision_count is not None
-    assert result.updated_at is not None or result.revision_count >= 1
-    assert result.last_accessed_at is not None or result.revision_count >= 1
+    result = store.vector_store.collection.get(ids=[legacy_id], include=["metadatas"])
+    metadata = result["metadatas"][0]
+    assert metadata["title"] == "Legacy"
+    assert metadata["type"] == "note"

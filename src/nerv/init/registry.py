@@ -11,10 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 logger = logging.getLogger("nerv.registry")
 
 _SKILL_DIRS = [
-    ".nerv/skills",
-]
-_USER_SKILL_DIRS = [
-    "~/.config/opencode/skills",
+    ".opencode/skills",
 ]
 
 
@@ -26,7 +23,7 @@ class SkillEntry(BaseModel):
     name: str
     description: str
     when_to_use: str = ""
-    model: str = "sonnet"
+    model: str = "medium"
     hub_skill_ids: list[str] = Field(default_factory=list)
     path: Path
     raw_content: str
@@ -49,7 +46,7 @@ def _parse_frontmatter(text: str) -> tuple[dict, str]:
     if end == -1:
         return {}, text
     raw_yaml = text[3:end].strip()
-    body = text[end + 4:].lstrip("\n")
+    body = text[end + 4 :].lstrip("\n")
     try:
         data = yaml.safe_load(raw_yaml) or {}
     except yaml.YAMLError as exc:
@@ -78,7 +75,7 @@ def _load_skill(path: Path) -> SkillEntry | None:
         name=str(name),
         description=str(description),
         when_to_use=str(frontmatter.get("when_to_use", "")),
-        model=str(frontmatter.get("model", "sonnet")),
+        model=str(frontmatter.get("model", "medium")),
         hub_skill_ids=[str(s) for s in hub_skill_ids],
         path=path,
         raw_content=text,
@@ -94,23 +91,30 @@ class SkillRegistry:
     @classmethod
     def scan(cls, root: Path) -> SkillRegistry:
         entries: list[SkillEntry] = []
-        seen: set[str] = set()
+        seen_paths: set[str] = set()
+        seen_names: set[str] = set()
 
-        dirs: list[Path] = [root / d for d in _SKILL_DIRS]
-        dirs += [Path(d).expanduser() for d in _USER_SKILL_DIRS]
-
-        for skill_dir in dirs:
+        for skill_dir in [root / d for d in _SKILL_DIRS]:
             if not skill_dir.is_dir():
                 continue
             for skill_file in sorted(skill_dir.rglob("SKILL.md")):
-                key = skill_file.resolve().as_posix()
-                if key in seen:
+                path_key = skill_file.resolve().as_posix()
+                if path_key in seen_paths:
                     continue
-                seen.add(key)
+                seen_paths.add(path_key)
                 entry = _load_skill(skill_file)
-                if entry is not None:
-                    entries.append(entry)
-                    logger.debug("registered skill %s from %s", entry.name, skill_file)
+                if entry is None:
+                    continue
+                if entry.name in seen_names:
+                    logger.debug(
+                        "skipping duplicate skill %s from %s (already registered)",
+                        entry.name,
+                        skill_file,
+                    )
+                    continue
+                seen_names.add(entry.name)
+                entries.append(entry)
+                logger.debug("registered skill %s from %s", entry.name, skill_file)
 
         logger.info("skill registry: %d skills loaded", len(entries))
         return cls(entries)
@@ -135,8 +139,12 @@ class SkillRegistry:
         ]
         for e in self.entries:
             hub_ids = ", ".join(e.hub_skill_ids) if e.hub_skill_ids else "—"
-            when = e.when_to_use[:60] + "…" if len(e.when_to_use) > 60 else e.when_to_use
-            desc = e.description[:60] + "…" if len(e.description) > 60 else e.description
+            when = (
+                e.when_to_use[:60] + "…" if len(e.when_to_use) > 60 else e.when_to_use
+            )
+            desc = (
+                e.description[:60] + "…" if len(e.description) > 60 else e.description
+            )
             lines.append(f"| `{e.name}` | {desc} | {when} | {e.model} | {hub_ids} |")
 
         return "\n".join(lines) + "\n"

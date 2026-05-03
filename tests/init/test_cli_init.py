@@ -20,7 +20,7 @@ def test_init_command_creates_files(tmp_path: Path):
     assert result.exit_code == 0
     assert (tmp_path / ".nerv/a2a-config.yaml").exists()
     assert (tmp_path / "AGENTS.md").exists()
-    assert (tmp_path / "mcp.json").exists()
+    assert (tmp_path / "opencode.json").exists()
     assert (tmp_path / ".githooks/pre-push").exists()
 
 
@@ -30,9 +30,12 @@ def test_init_with_explicit_stack_and_name(tmp_path: Path):
         app,
         [
             "init",
-            "--root", str(tmp_path),
-            "--stack", "python",
-            "--project-name", "myapp",
+            "--root",
+            str(tmp_path),
+            "--stack",
+            "python",
+            "--project-name",
+            "myapp",
         ],
     )
 
@@ -44,7 +47,7 @@ def test_init_with_explicit_stack_and_name(tmp_path: Path):
     assert "port: 19820" in content
 
     agents_md = tmp_path / "AGENTS.md"
-    assert "- **Stack**: python" in agents_md.read_text()
+    assert "**Stack**: python" in agents_md.read_text()
 
 
 def test_init_double_invocation_skips_files(tmp_path: Path):
@@ -70,14 +73,13 @@ def test_init_with_force_overwrites(tmp_path: Path):
 
     runner.invoke(app, ["init", "--root", str(tmp_path)])
 
-    mcp = tmp_path / "mcp.json"
-    data = mcp.read_text()
-    mcp.write_text('{"modified": true}')
+    ocode = tmp_path / "opencode.json"
+    ocode.write_text('{"modified": true}')
 
     result = runner.invoke(app, ["init", "--root", str(tmp_path), "--force"])
 
     assert result.exit_code == 0
-    assert '"modified"' not in mcp.read_text()
+    assert '"modified"' not in ocode.read_text()
 
 
 def test_hub_start_help_works():

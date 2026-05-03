@@ -4,30 +4,168 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from nerv.init.context import ProjectContext, Stack
+from nerv.init.context import ProjectContext
 from nerv.init.detector import detect_stack
 from nerv.init.registry import write_registry
 from nerv.init.renderer import TemplateEngine
-from nerv.init.writer import WriteResult, configure_git_hooks, write_file
+from nerv.init.writer import (
+    WriteResult,
+    configure_git_hooks,
+    scaffold_agents_md,
+    write_file,
+)
 
 FILE_MANIFEST = [
     ("nerv/a2a-config.yaml.j2", ".nerv/a2a-config.yaml", False, False),
-    ("opencode/AGENTS.md.j2", "AGENTS.md", False, False),
-    ("opencode/skills/code/SKILL.md.j2", ".nerv/skills/code/SKILL.md", False, False),
-    ("opencode/skills/testing/SKILL.md.j2", ".nerv/skills/testing/SKILL.md", False, False),
-    ("opencode/skills/commits/SKILL.md.j2", ".nerv/skills/commits/SKILL.md", False, False),
-    ("mcp.json.j2", "mcp.json", False, False),
+    ("opencode.json.j2", "opencode.json", False, False),
     ("githooks/pre-push.py.j2", ".githooks/pre-push", False, True),
-    # SDD skills (agentskills.io format for opencode)
-    ("opencode/skills/sdd-explore/SKILL.md.j2", ".nerv/skills/sdd-explore/SKILL.md", False, False),
-    ("opencode/skills/sdd-propose/SKILL.md.j2", ".nerv/skills/sdd-propose/SKILL.md", False, False),
-    ("opencode/skills/sdd-spec/SKILL.md.j2", ".nerv/skills/sdd-spec/SKILL.md", False, False),
-    ("opencode/skills/sdd-design/SKILL.md.j2", ".nerv/skills/sdd-design/SKILL.md", False, False),
-    ("opencode/skills/sdd-tasks/SKILL.md.j2", ".nerv/skills/sdd-tasks/SKILL.md", False, False),
-    ("opencode/skills/sdd-apply/SKILL.md.j2", ".nerv/skills/sdd-apply/SKILL.md", False, False),
-    ("opencode/skills/sdd-verify/SKILL.md.j2", ".nerv/skills/sdd-verify/SKILL.md", False, False),
-    ("opencode/skills/sdd-archive/SKILL.md.j2", ".nerv/skills/sdd-archive/SKILL.md", False, False),
-    ("opencode/skills/judgment-day/SKILL.md.j2", ".nerv/skills/judgment-day/SKILL.md", False, False),
+    # Skills (opencode-native path)
+    (
+        "opencode/skills/code/SKILL.md.j2",
+        ".opencode/skills/code/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/testing/SKILL.md.j2",
+        ".opencode/skills/testing/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/commits/SKILL.md.j2",
+        ".opencode/skills/commits/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-explore/SKILL.md.j2",
+        ".opencode/skills/sdd-explore/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-propose/SKILL.md.j2",
+        ".opencode/skills/sdd-propose/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-spec/SKILL.md.j2",
+        ".opencode/skills/sdd-spec/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-design/SKILL.md.j2",
+        ".opencode/skills/sdd-design/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-tasks/SKILL.md.j2",
+        ".opencode/skills/sdd-tasks/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-apply/SKILL.md.j2",
+        ".opencode/skills/sdd-apply/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-verify/SKILL.md.j2",
+        ".opencode/skills/sdd-verify/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/sdd-archive/SKILL.md.j2",
+        ".opencode/skills/sdd-archive/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/judgment-day/SKILL.md.j2",
+        ".opencode/skills/judgment-day/SKILL.md",
+        False,
+        False,
+    ),
+    # Slash commands
+    ("opencode/commands/sdd-new.md.j2", ".opencode/commands/sdd-new.md", False, False),
+    (
+        "opencode/commands/judgment-day.md.j2",
+        ".opencode/commands/judgment-day.md",
+        False,
+        False,
+    ),
+    ("opencode/commands/review.md.j2", ".opencode/commands/review.md", False, False),
+    ("opencode/commands/handoff.md.j2", ".opencode/commands/handoff.md", False, False),
+    # SDD phase sub-agents
+    (
+        "opencode/agents/sdd-explorer.md.j2",
+        ".opencode/agents/sdd-explorer.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/agents/sdd-proposer.md.j2",
+        ".opencode/agents/sdd-proposer.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/agents/sdd-speccer.md.j2",
+        ".opencode/agents/sdd-speccer.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/agents/sdd-designer.md.j2",
+        ".opencode/agents/sdd-designer.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/agents/sdd-task-planner.md.j2",
+        ".opencode/agents/sdd-task-planner.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/agents/sdd-verifier.md.j2",
+        ".opencode/agents/sdd-verifier.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/agents/sdd-archiver.md.j2",
+        ".opencode/agents/sdd-archiver.md",
+        False,
+        False,
+    ),
+    # Git & GitHub sub-agents
+    ("opencode/agents/git-ops.md.j2", ".opencode/agents/git-ops.md", False, False),
+    (
+        "opencode/agents/github-ops.md.j2",
+        ".opencode/agents/github-ops.md",
+        False,
+        False,
+    ),
+    # Git & GitHub skills
+    (
+        "opencode/skills/git-ops/SKILL.md.j2",
+        ".opencode/skills/git-ops/SKILL.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/github-ops/SKILL.md.j2",
+        ".opencode/skills/github-ops/SKILL.md",
+        False,
+        False,
+    ),
 ]
 
 
@@ -54,6 +192,23 @@ def run_init(
         created_count = 0
         skipped_count = 0
         error_count = 0
+
+        # Scaffold AGENTS.md (replaces template rendering)
+        try:
+            agents_md = root / "AGENTS.md"
+            existed = agents_md.exists()
+            result_path = scaffold_agents_md(
+                root, context.stack.value, final_project_name, force=force
+            )
+            if existed and not force:
+                print(f"⊘ Skipped {result_path.relative_to(root)} (already exists)")
+                skipped_count += 1
+            else:
+                print(f"✓ Created {result_path.relative_to(root)}")
+                created_count += 1
+        except Exception as exc:
+            print(f"✗ Error scaffolding AGENTS.md: {exc}")
+            error_count += 1
 
         for template_name, output_path, use_markers, make_executable in FILE_MANIFEST:
             try:
@@ -95,7 +250,9 @@ def run_init(
         except Exception as exc:
             print(f"⚠ Skill registry not written: {exc}")
 
-        print(f"\nDone. {created_count} files created/updated, {skipped_count} skipped.")
+        print(
+            f"\nDone. {created_count} files created/updated, {skipped_count} skipped."
+        )
         if error_count > 0:
             print(f"⚠ {error_count} errors occurred")
             return 1
