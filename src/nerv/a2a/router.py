@@ -67,13 +67,18 @@ class TaskRouter:
         agent_id, card, skill = candidates[0]
 
         logger.debug("memory_search for context agent=%s", agent_id)
+        context: list[dict] = []
         if self.memory_service:
-            search_response = self.memory_service.memory_search(
-                query=description[:1000], limit=5
-            )
-            context: list[dict] = search_response["results"]
-        else:
-            context = []
+            try:
+                search_response = self.memory_service.memory_search(
+                    query=description[:1000], limit=5
+                )
+                context = search_response.get("results", [])
+            except Exception:
+                logger.warning(
+                    "memory_search failed during routing (continuing without context)",
+                    exc_info=True,
+                )
 
         if self.registry:
             skill_entries = self.registry.find_by_skill_id(skill_id)
