@@ -1,8 +1,23 @@
+# >>> NERV-MARKER-START
 # AGENTS.md — Coding Standards for nerv
 
 ## Project Stack
 
 **Stack**: python
+## Project Structure
+
+- `src/` — Source code
+- `tests/` — Test suite
+- `docs/` — Documentation
+
+
+### Entry Points
+
+- `nerv`
+- `nerv-hub`
+- `nerv-memory`
+
+
 
 ## Rules
 
@@ -84,3 +99,4 @@ REJECT if:
 REQUIRE:
 - Descriptive variable and function names
 - Error messages that help debugging
+# >>> NERV-MARKER-END
