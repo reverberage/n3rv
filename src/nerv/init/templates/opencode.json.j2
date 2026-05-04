@@ -1,7 +1,19 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "nerv",
-  "instructions": ["AGENTS.md"],
+  "instructions": [
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "docs/*.md"
+  ],
+  "plugins": [
+    ".opencode/plugins/nerv-lifecycle.js",
+    ".opencode/plugins/nerv-shell-env.js"
+  ],
+  "tools": {
+    "websearch": { "disable": false }
+  },
   "agent": {
     "build": { "disable": true },
     "plan": { "disable": true }

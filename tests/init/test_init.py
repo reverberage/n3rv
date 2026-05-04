@@ -130,6 +130,79 @@ class TestInit:
         content = code_skill.read_text(encoding="utf-8")
         assert "FastAPI" not in content
 
+    def test_plugins_scaffolded_on_init(self, tmp_path: Path) -> None:
+        _write_fastapi_pyproject(tmp_path)
+        run_init(tmp_path, project_name=None, stack_override=None, force=True)
+
+        lifecycle = tmp_path / ".opencode" / "plugins" / "nerv-lifecycle.js"
+        shell_env = tmp_path / ".opencode" / "plugins" / "nerv-shell-env.js"
+        assert lifecycle.is_file(), f"Missing {lifecycle}"
+        assert shell_env.is_file(), f"Missing {shell_env}"
+
+        lc_content = lifecycle.read_text(encoding="utf-8")
+        assert "onSessionCompacting" in lc_content
+        assert "onSessionIdle" in lc_content
+
+        se_content = shell_env.read_text(encoding="utf-8")
+        assert "onShellEnv" in se_content
+        assert "opencode:nerv" in se_content
+
+    def test_tools_scaffolded_on_init(self, tmp_path: Path) -> None:
+        _write_fastapi_pyproject(tmp_path)
+        run_init(tmp_path, project_name=None, stack_override=None, force=True)
+
+        stats_ts = tmp_path / ".opencode" / "tools" / "nerv-stats.ts"
+        package_json = tmp_path / ".opencode" / "package.json"
+        assert stats_ts.is_file(), f"Missing {stats_ts}"
+        assert package_json.is_file(), f"Missing {package_json}"
+
+        ts_content = stats_ts.read_text(encoding="utf-8")
+        assert "nerv_memory_stats" in ts_content
+        assert "nerv_hub_health" in ts_content
+        assert "nerv_check_pending_tasks" in ts_content
+
+        pkg_content = package_json.read_text(encoding="utf-8")
+        assert "zod" in pkg_content or '"zod"' in pkg_content
+
+    def test_docs_scaffolded_on_init(self, tmp_path: Path) -> None:
+        _write_fastapi_pyproject(tmp_path)
+        run_init(tmp_path, project_name=None, stack_override=None, force=True)
+
+        contributing = tmp_path / "CONTRIBUTING.md"
+        security = tmp_path / "SECURITY.md"
+        assert contributing.is_file(), f"Missing {contributing}"
+        assert security.is_file(), f"Missing {security}"
+
+        contrib_content = contributing.read_text(encoding="utf-8")
+        assert "AGENTS.md" in contrib_content
+
+        sec_content = security.read_text(encoding="utf-8")
+        assert "trusted local environment" in sec_content or "127.0.0.1" in sec_content
+
+    def test_opencode_json_has_new_keys(self, tmp_path: Path) -> None:
+        _write_fastapi_pyproject(tmp_path)
+        run_init(tmp_path, project_name=None, stack_override=None, force=True)
+
+        import json
+
+        oc_json = tmp_path / "opencode.json"
+        assert oc_json.is_file()
+        data = json.loads(oc_json.read_text(encoding="utf-8"))
+
+        assert "plugins" in data
+        assert len(data["plugins"]) >= 2
+        assert any("nerv-lifecycle" in p for p in data["plugins"])
+        assert any("nerv-shell-env" in p for p in data["plugins"])
+
+        instructions = data.get("instructions", [])
+        assert "AGENTS.md" in instructions
+        assert "CONTRIBUTING.md" in instructions
+        assert "SECURITY.md" in instructions
+        assert any("docs" in i for i in instructions)
+
+        assert "tools" in data
+        assert data["tools"].get("websearch", {}).get("disable") is False
+
 
 class TestUpdate:
     def test_markers_preserved_on_update(self, tmp_path: Path) -> None:

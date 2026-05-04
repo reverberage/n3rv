@@ -26,6 +26,30 @@ FILE_MANIFEST = [
     ),
     ("opencode.json.j2", "opencode.json", False, False),
     ("githooks/pre-push.py.j2", ".githooks/pre-push", False, True),
+    # Docs
+    ("CONTRIBUTING.md.j2", "CONTRIBUTING.md", False, False),
+    ("SECURITY.md.j2", "SECURITY.md", False, False),
+    # Plugins
+    (
+        "opencode/plugins/nerv-lifecycle.js.j2",
+        ".opencode/plugins/nerv-lifecycle.js",
+        False,
+        False,
+    ),
+    (
+        "opencode/plugins/nerv-shell-env.js.j2",
+        ".opencode/plugins/nerv-shell-env.js",
+        False,
+        False,
+    ),
+    # Custom tools
+    (
+        "opencode/tools/nerv-stats.ts.j2",
+        ".opencode/tools/nerv-stats.ts",
+        False,
+        False,
+    ),
+    ("opencode/package.json.j2", ".opencode/package.json", False, False),
     # Skills (opencode-native path)
     (
         "opencode/skills/code/SKILL.md.j2",

@@ -1,0 +1,161 @@
+/**
+ * NERV custom tools for OpenCode.
+ *
+ * These tools communicate with NERV MCP servers via HTTP, bypassing the
+ * MCP subprocess round-trip for faster LLM tool calls.
+ *
+ * All tools have a 1s hard timeout and return structured JSON on failure.
+ */
+
+import { z } from "zod";
+
+// ──────────────────────────────────────────────
+// Internal: call nerv-memory MCP via HTTP POST
+// ──────────────────────────────────────────────
+const MEMORY_MCP_URL = "http://127.0.0.1:19821";
+
+async function memoryRpc(method: string, params: Record<string, unknown> = {}): Promise<any> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1000);
+
+  try {
+    const res = await fetch(`${MEMORY_MCP_URL}/rpc`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method,
+        params,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      return { error: `HTTP ${res.status}: ${res.statusText}` };
+    }
+
+    const data = await res.json();
+    if (data.error) {
+      return { error: data.error.message ?? String(data.error) };
+    }
+    return data.result;
+  } catch (err: any) {
+    if (err.name === "AbortError") return { error: "timeout" };
+    return { error: err.message ?? "unavailable" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// ──────────────────────────────────────────────
+// Internal: call nerv-hub MCP via HTTP POST
+// ──────────────────────────────────────────────
+const HUB_MCP_URL = "http://127.0.0.1:19820";
+
+async function hubRpc(method: string, params: Record<string, unknown> = {}): Promise<any> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1000);
+
+  try {
+    const res = await fetch(`${HUB_MCP_URL}/rpc`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method,
+        params,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      return { error: `HTTP ${res.status}: ${res.statusText}` };
+    }
+
+    const data = await res.json();
+    if (data.error) {
+      return { error: data.error.message ?? String(data.error) };
+    }
+    return data.result;
+  } catch (err: any) {
+    if (err.name === "AbortError") return { error: "timeout" };
+    return { error: err.message ?? "unavailable" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// ──────────────────────────────────────────────
+// Tools
+// ──────────────────────────────────────────────
+
+export const nerv_memory_stats = {
+  description: "Return aggregate counts for active memories in NERV memory store.",
+  parameters: z.object({}),
+  execute: async (_params: Record<string, never>): Promise<string> => {
+    const result = await memoryRpc("memory_stats", {});
+    if (result.error) {
+      return JSON.stringify({ error: "memory_stats unavailable", detail: result.error });
+    }
+    return JSON.stringify(result);
+  },
+};
+
+export const nerv_task_status = {
+  description: "Get the current state of an A2A hub task by its ID.",
+  parameters: z.object({
+    task_id: z.string().describe("The task ID to look up"),
+  }),
+  execute: async (params: { task_id: string }): Promise<string> => {
+    const result = await hubRpc("get_task", { task_id: params.task_id });
+    if (result.error) {
+      return JSON.stringify({ error: "task_status unavailable", detail: result.error });
+    }
+    return JSON.stringify(result);
+  },
+};
+
+export const nerv_hub_health = {
+  description: "Check whether the NERV A2A hub is reachable and healthy.",
+  parameters: z.object({}),
+  execute: async (_params: Record<string, never>): Promise<string> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1000);
+
+    try {
+      const res = await fetch("http://127.0.0.1:19820/health", {
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        return JSON.stringify({ connected: false, status: res.status });
+      }
+      const data = await res.json();
+      return JSON.stringify({ connected: true, ...data });
+    } catch (err: any) {
+      return JSON.stringify({ connected: false });
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+};
+
+export const nerv_check_pending_tasks = {
+  description:
+    "List all pending tasks assigned to an agent. Falls back to NERV_AGENT_SOURCE env var if agent_id omitted.",
+  parameters: z.object({
+    agent_id: z
+      .string()
+      .optional()
+      .describe("The agent ID to check. If omitted, uses NERV_AGENT_SOURCE from environment."),
+  }),
+  execute: async (params: { agent_id?: string }): Promise<string> => {
+    const agentId = params.agent_id ?? process.env.NERV_AGENT_SOURCE ?? "unknown";
+    const result = await hubRpc("list_pending_tasks", { agent_id: agentId });
+    if (result.error) {
+      return JSON.stringify({ error: "check_pending_tasks unavailable", detail: result.error });
+    }
+    return JSON.stringify(result);
+  },
+};
