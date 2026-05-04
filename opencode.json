@@ -1,6 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "default_agent": "nerv",
   "instructions": ["AGENTS.md"],
+  "agent": {
+    "build": { "disable": true },
+    "plan": { "disable": true }
+  },
   "mcp": {
     "nerv-memory": {
       "type": "local",

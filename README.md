@@ -33,7 +33,7 @@ uvx --from git+https://github.com/juanmanueldaza/nerv.git nerv init
 | File | Purpose |
 |------|---------|
 | `AGENTS.md` | Coding standards with **LCL injection** — auto-detected frameworks, tools, project structure, and framework-specific guidance |
-| `opencode.json` | opencode config: MCP servers + instructions |
+| `opencode.json` | opencode config: MCP servers, instructions, disables built-in agents, sets `nerv` as default |
 | `.opencode/skills/` | Agent skills — code, testing, commits, SDD, git-ops, github-ops (14 skills). Code and testing skills get framework-specific snippets injected. |
 | `.opencode/commands/` | Slash commands — `/sdd-new`, `/judgment-day`, `/review`, `/handoff` plus auto-generated `/test`, `/lint`, `/typecheck` (when tools detected) |
 | `.opencode/agents/` | Sub-agents — 7 SDD phase agents + 2 operations agents (git-ops, github-ops) + **nerv** primary orchestrator agent |
@@ -47,6 +47,7 @@ uvx --from git+https://github.com/juanmanueldaza/nerv.git nerv init
 
 NERV generates files in opencode's native discovery paths. When you run opencode in your project:
 
+- **Nerv is the only primary agent** — `opencode.json` disables built-in `build` and `plan`, sets `default_agent: "nerv"`. Only the NERV orchestrator appears in the agent picker.
 - **Skills** in `.opencode/skills/` are auto-discovered via the `skill` tool — loaded on demand with full context
 - **Commands** in `.opencode/commands/` appear as slash commands in the TUI — type `/sdd-new` to start a workflow
 - **Agents** in `.opencode/agents/` are available as sub-agents — invoked by the orchestrator via `Task` tool
