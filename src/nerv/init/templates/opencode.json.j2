@@ -22,19 +22,19 @@
     "nerv-memory": {
       "type": "local",
       "command": ["uv", "run", "nerv-memory"],
-      "env": {"NERV_AGENT_SOURCE": "opencode"}
+      "environment": {"NERV_AGENT_SOURCE": "opencode"}
     },
     "nerv-hub": {
       "type": "local",
       "command": ["uv", "run", "nerv-hub"],
-      "env": {"NERV_AGENT_SOURCE": "opencode"}
+      "environment": {"NERV_AGENT_SOURCE": "opencode"}
     }{% for srv in profile_mcp_servers %},
     "{{ srv.name }}": {
       "type": "{{ srv.type }}"{% if srv.command %},
       "command": {{ srv.command | tojson }}{% endif %}{% if srv.url %},
       "url": "{{ srv.url }}"{% endif %}{% if srv.environment %},
-      "env": {{ srv.environment | tojson }}{% endif %}{% if srv.disabled %},
-      "disabled": true{% endif %}
+      "environment": {{ srv.environment | tojson }}{% endif %}{% if srv.disabled %},
+      "enabled": false{% endif %}
     }{% endfor %}
   }
 }

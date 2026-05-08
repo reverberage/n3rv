@@ -5,16 +5,18 @@
  * MCP subprocess round-trip for faster LLM tool calls.
  *
  * All tools have a 1s hard timeout and return structured JSON on failure.
+ *
+ * Uses @opencode-ai/plugin tool() helper to avoid Zod version conflicts.
  */
 
-import { z } from "zod";
+import { tool } from "@opencode-ai/plugin";
 
 // ──────────────────────────────────────────────
 // Internal: call nerv-memory MCP via HTTP POST
 // ──────────────────────────────────────────────
 const MEMORY_MCP_URL = "http://127.0.0.1:19821";
 
-async function memoryRpc(method, params = {}) {
+async function memoryRpc(method: string, params: Record<string, unknown> = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 1000);
 
@@ -40,7 +42,7 @@ async function memoryRpc(method, params = {}) {
       return { error: data.error.message ?? String(data.error) };
     }
     return data.result;
-  } catch (err) {
+  } catch (err: any) {
     if (err.name === "AbortError") return { error: "timeout" };
     return { error: err.message ?? "unavailable" };
   } finally {
@@ -53,7 +55,7 @@ async function memoryRpc(method, params = {}) {
 // ──────────────────────────────────────────────
 const HUB_MCP_URL = "http://127.0.0.1:19820";
 
-async function hubRpc(method, params = {}) {
+async function hubRpc(method: string, params: Record<string, unknown> = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 1000);
 
@@ -79,7 +81,7 @@ async function hubRpc(method, params = {}) {
       return { error: data.error.message ?? String(data.error) };
     }
     return data.result;
-  } catch (err) {
+  } catch (err: any) {
     if (err.name === "AbortError") return { error: "timeout" };
     return { error: err.message ?? "unavailable" };
   } finally {
@@ -91,36 +93,36 @@ async function hubRpc(method, params = {}) {
 // Tools
 // ──────────────────────────────────────────────
 
-export const nerv_memory_stats = {
+export const nerv_memory_stats = tool({
   description: "Return aggregate counts for active memories in NERV memory store.",
-  parameters: z.object({}),
-  execute: async (_params) => {
+  args: {},
+  async execute() {
     const result = await memoryRpc("memory_stats", {});
     if (result.error) {
       return JSON.stringify({ error: "memory_stats unavailable", detail: result.error });
     }
     return JSON.stringify(result);
   },
-};
+});
 
-export const nerv_task_status = {
+export const nerv_task_status = tool({
   description: "Get the current state of an A2A hub task by its ID.",
-  parameters: z.object({
-    task_id: z.string().describe("The task ID to look up"),
-  }),
-  execute: async (params) => {
-    const result = await hubRpc("get_task", { task_id: params.task_id });
+  args: {
+    task_id: tool.schema.string().describe("The task ID to look up"),
+  },
+  async execute(args) {
+    const result = await hubRpc("get_task", { task_id: args.task_id });
     if (result.error) {
       return JSON.stringify({ error: "task_status unavailable", detail: result.error });
     }
     return JSON.stringify(result);
   },
-};
+});
 
-export const nerv_hub_health = {
+export const nerv_hub_health = tool({
   description: "Check whether the NERV A2A hub is reachable and healthy.",
-  parameters: z.object({}),
-  execute: async (_params) => {
+  args: {},
+  async execute() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 1000);
 
@@ -133,29 +135,29 @@ export const nerv_hub_health = {
       }
       const data = await res.json();
       return JSON.stringify({ connected: true, ...data });
-    } catch (err) {
+    } catch {
       return JSON.stringify({ connected: false });
     } finally {
       clearTimeout(timeout);
     }
   },
-};
+});
 
-export const nerv_check_pending_tasks = {
+export const nerv_check_pending_tasks = tool({
   description:
     "List all pending tasks assigned to an agent. Falls back to NERV_AGENT_SOURCE env var if agent_id omitted.",
-  parameters: z.object({
-    agent_id: z
+  args: {
+    agent_id: tool.schema
       .string()
       .optional()
       .describe("The agent ID to check. If omitted, uses NERV_AGENT_SOURCE from environment."),
-  }),
-  execute: async (params) => {
-    const agentId = params.agent_id ?? process.env.NERV_AGENT_SOURCE ?? "unknown";
+  },
+  async execute(args) {
+    const agentId = args.agent_id ?? process.env.NERV_AGENT_SOURCE ?? "unknown";
     const result = await hubRpc("list_pending_tasks", { agent_id: agentId });
     if (result.error) {
       return JSON.stringify({ error: "check_pending_tasks unavailable", detail: result.error });
     }
     return JSON.stringify(result);
   },
-};
+});

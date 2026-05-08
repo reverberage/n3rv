@@ -163,7 +163,7 @@ class TestInit:
         assert "nerv_check_pending_tasks" in ts_content
 
         pkg_content = package_json.read_text(encoding="utf-8")
-        assert "zod" in pkg_content or '"zod"' in pkg_content
+        assert "@opencode-ai/plugin" in pkg_content
 
     def test_docs_scaffolded_on_init(self, tmp_path: Path) -> None:
         _write_fastapi_pyproject(tmp_path)

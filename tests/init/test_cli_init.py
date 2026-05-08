@@ -37,8 +37,8 @@ def test_init_creates_opencode_json_with_env(tmp_path: Path):
     memory_cfg = ocode["mcp"]["nerv-memory"]
     hub_cfg = ocode["mcp"]["nerv-hub"]
 
-    assert memory_cfg["env"] == {"NERV_AGENT_SOURCE": "opencode"}
-    assert hub_cfg["env"] == {"NERV_AGENT_SOURCE": "opencode"}
+    assert memory_cfg["environment"] == {"NERV_AGENT_SOURCE": "opencode"}
+    assert hub_cfg["environment"] == {"NERV_AGENT_SOURCE": "opencode"}
 
 
 def test_init_creates_systemd_unit(tmp_path: Path):

@@ -11,9 +11,9 @@ class TestNervStatsTools:
     def test_file_exists(self) -> None:
         assert _tools_path().is_file()
 
-    def test_imports_zod(self) -> None:
+    def test_imports_tool(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert 'import { z } from "zod"' in content
+        assert "@opencode-ai/plugin" in content
 
     def test_exports_memory_stats(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
@@ -44,9 +44,9 @@ class TestNervStatsTools:
         content = _tools_path().read_text(encoding="utf-8")
         assert "NERV_AGENT_SOURCE" in content or "agent_id" in content
 
-    def test_all_tools_have_zod_schemas(self) -> None:
+    def test_all_tools_use_tool_helper(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "z.object(" in content or "z.string()" in content
+        assert "tool({" in content
 
     def test_timeout_handling_present(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
