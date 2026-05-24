@@ -30,9 +30,7 @@ class TestMCPRecommender:
         names = {s.name for s in servers}
         assert "chrome-devtools" in names
 
-    def test_node_stack_gets_chrome_devtools_even_without_web_files(
-        self, tmp_path: Path
-    ) -> None:
+    def test_node_stack_gets_chrome_devtools_even_without_web_files(self, tmp_path: Path) -> None:
         """Node projects get chrome-devtools even if web files not explicitly detected."""
         structure = StructureInfo(has_web_files=False)
         recommender = MCPRecommender()
@@ -93,9 +91,7 @@ class TestMCPRecommender:
         servers = recommender.detect(tmp_path, Stack.PYTHON, structure)
         for srv in servers:
             assert srv.name, "Server name is required"
-            assert srv.type in ("local", "remote"), (
-                f"Invalid type for {srv.name}: {srv.type}"
-            )
+            assert srv.type in ("local", "remote"), f"Invalid type for {srv.name}: {srv.type}"
             if srv.type == "local":
                 assert srv.command, f"Local server {srv.name} missing command"
             else:
@@ -110,10 +106,7 @@ class TestMCPRecommender:
         for stack in Stack:
             servers = recommender.detect(tmp_path, stack, structure)
             universal = [s for s in servers if s.name in ("github", "context7")]
-            current = {
-                (s.name, tuple(s.command) if s.command else None, s.type)
-                for s in universal
-            }
+            current = {(s.name, tuple(s.command) if s.command else None, s.type) for s in universal}
             if first is None:
                 first = current
             else:

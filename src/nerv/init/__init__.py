@@ -320,17 +320,13 @@ def run_init(
         except Exception as exc:
             print(f"⚠ Skill registry not written: {exc}")
 
-        print(
-            f"\nDone. {created_count} files created/updated, {skipped_count} skipped."
-        )
+        print(f"\nDone. {created_count} files created/updated, {skipped_count} skipped.")
         if error_count > 0:
             print(f"⚠ {error_count} errors occurred")
             return 1
 
         print("NERV is configured. Work inside opencode.")
-        print(
-            "Next: Run 'nerv daemon install' to set up the hub as a background service."
-        )
+        print("Next: Run 'nerv daemon install' to set up the hub as a background service.")
         return 0
 
     except Exception as exc:

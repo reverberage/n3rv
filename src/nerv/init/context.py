@@ -37,9 +37,7 @@ class ProjectContext(BaseModel):
         return v
 
     @classmethod
-    def build(
-        cls, project_name: str, stack: Stack, project_root: Path
-    ) -> ProjectContext:
+    def build(cls, project_name: str, stack: Stack, project_root: Path) -> ProjectContext:
         from importlib.metadata import PackageNotFoundError, version
 
         try:

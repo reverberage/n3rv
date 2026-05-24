@@ -4,14 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 from nerv.init.registry import (
     SkillEntry,
     SkillRegistry,
     _parse_frontmatter,
     write_registry,
 )
-
 
 # --------------------------------------------------------------------------- #
 # _parse_frontmatter
@@ -106,9 +104,7 @@ def test_scan_empty_dir(tmp_path: Path):
 
 def test_scan_multiple_skills(tmp_path: Path):
     _make_skill_dir(tmp_path, ".opencode/skills/skill-a", SKILL_CONTENT)
-    content_b = SKILL_CONTENT.replace("test-skill", "skill-b").replace(
-        "A test skill", "Skill B"
-    )
+    content_b = SKILL_CONTENT.replace("test-skill", "skill-b").replace("A test skill", "Skill B")
     _make_skill_dir(tmp_path, ".opencode/skills/skill-b", content_b)
     registry = SkillRegistry.scan(tmp_path)
     assert len(registry.entries) == 2

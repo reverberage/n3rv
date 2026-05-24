@@ -5,6 +5,7 @@ from pathlib import Path
 import typer
 
 from nerv.a2a.hub import main as hub_main
+from nerv.cli_memory import memory_app
 from nerv.daemon import (
     daemon_enable,
     daemon_install,
@@ -14,11 +15,8 @@ from nerv.daemon import (
     daemon_stop,
 )
 from nerv.init import run_init
-from nerv.cli_memory import memory_app
 
-app = typer.Typer(
-    name="nerv", help="Invisible engineering infrastructure for opencode agents"
-)
+app = typer.Typer(name="nerv", help="Invisible engineering infrastructure for opencode agents")
 hub_app = typer.Typer(help="A2A Hub commands")
 daemon_app = typer.Typer(help="Manage nerv hub daemon")
 app.add_typer(hub_app, name="hub")
@@ -67,12 +65,8 @@ def init(
 
 @app.command("update")
 def update_command(
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview changes without writing"
-    ),
-    force_commands: bool = typer.Option(
-        False, "--force-commands", help="Overwrite command files"
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview changes without writing"),
+    force_commands: bool = typer.Option(False, "--force-commands", help="Overwrite command files"),
     only: str | None = typer.Option(
         None,
         "--only",

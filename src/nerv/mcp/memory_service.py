@@ -11,6 +11,9 @@ from collections import Counter
 from datetime import timedelta
 
 from nerv.config import RuntimeSettings
+from nerv.mcp.relation_store import RelationStore
+from nerv.mcp.session_manager import SessionManager
+from nerv.mcp.vector_store import VectorStore, _parse_timestamp
 from nerv.models.memory import (
     ConflictCandidate,
     ContextEntry,
@@ -25,9 +28,6 @@ from nerv.models.memory import (
     TimelineEntry,
     TimelineResult,
 )
-from nerv.mcp.relation_store import RelationStore
-from nerv.mcp.session_manager import SessionManager
-from nerv.mcp.vector_store import VectorStore, _parse_timestamp
 
 logger = logging.getLogger("nerv.mcp.service")
 
@@ -42,9 +42,7 @@ _CONFLICT_CANDIDATES_LIMIT = 3
 def _to_dict(value):
     """Convert Pydantic model or list to dict for backward compat with tests."""
     if isinstance(value, (list,)):
-        return [
-            v.model_dump(mode="json") if hasattr(v, "model_dump") else v for v in value
-        ]
+        return [v.model_dump(mode="json") if hasattr(v, "model_dump") else v for v in value]
     if hasattr(value, "model_dump"):
         return value.model_dump(mode="json")
     return value
@@ -92,9 +90,7 @@ class MemoryService:
 
         if validated_topic_key:
             existing = self.vector_store.get(
-                where=self.vector_store._active_where(
-                    {"topic_key": validated_topic_key}
-                ),
+                where=self.vector_store._active_where({"topic_key": validated_topic_key}),
                 limit=1,
                 include=["metadatas"],
             )
@@ -106,9 +102,7 @@ class MemoryService:
                         int(existing_meta.get("duplicate_count", 1)) + 1
                     )
                     existing_meta["last_seen_at"] = now.isoformat()
-                    self.vector_store.update(
-                        ids=[document_id], metadatas=[existing_meta]
-                    )
+                    self.vector_store.update(ids=[document_id], metadatas=[existing_meta])
                     logger.debug("memory_save topic-duplicate id=%s", document_id)
                     return _to_dict(
                         SaveResult(
@@ -122,9 +116,7 @@ class MemoryService:
                 else:
                     status = "updated"
                     revision_count = int(existing_meta.get("revision_count", 1)) + 1
-                    original_timestamp = str(
-                        existing_meta.get("timestamp", now.isoformat())
-                    )
+                    original_timestamp = str(existing_meta.get("timestamp", now.isoformat()))
                     original_last_accessed = str(
                         existing_meta.get("last_accessed_at", now.isoformat())
                     )
@@ -138,14 +130,10 @@ class MemoryService:
             if duplicate["ids"]:
                 dup_id = duplicate["ids"][0]
                 dup_meta = dict(duplicate["metadatas"][0])
-                dup_meta["duplicate_count"] = (
-                    int(dup_meta.get("duplicate_count", 1)) + 1
-                )
+                dup_meta["duplicate_count"] = int(dup_meta.get("duplicate_count", 1)) + 1
                 dup_meta["last_seen_at"] = now.isoformat()
                 self.vector_store.update(ids=[dup_id], metadatas=[dup_meta])
-                logger.debug(
-                    "memory_save global-duplicate id=%s hash=%s", dup_id, content_hash
-                )
+                logger.debug("memory_save global-duplicate id=%s hash=%s", dup_id, content_hash)
                 return _to_dict(
                     SaveResult(
                         id=dup_id,
@@ -205,9 +193,7 @@ class MemoryService:
         if str(metadata.get("deleted_at", "")):
             raise KeyError(id)
         return _to_dict(
-            self._build_memory_entry(
-                item_id=id, document=result["documents"][0], metadata=metadata
-            )
+            self._build_memory_entry(item_id=id, document=result["documents"][0], metadata=metadata)
         )
 
     def memory_search(
@@ -251,12 +237,8 @@ class MemoryService:
         for item_id, document, metadata, distance in zip(
             ids, documents, metadatas, distances, strict=False
         ):
-            entry = self._build_memory_entry(
-                item_id=item_id, document=document, metadata=metadata
-            )
-            content_out = (
-                document[:200] if snippet_only and len(document) > 200 else document
-            )
+            entry = self._build_memory_entry(item_id=item_id, document=document, metadata=metadata)
+            content_out = document[:200] if snippet_only and len(document) > 200 else document
             items.append(
                 SearchResult(
                     id=entry.id,
@@ -270,14 +252,10 @@ class MemoryService:
                 )
             )
 
-        logger.debug(
-            "memory_search query=%r limit=%d results=%d", query[:60], limit, len(items)
-        )
+        logger.debug("memory_search query=%r limit=%d results=%d", query[:60], limit, len(items))
         self._searches_since_write += 1
         nudge = (
-            _SEARCH_NUDGE_MESSAGE
-            if self._searches_since_write > _SEARCH_NUDGE_THRESHOLD
-            else None
+            _SEARCH_NUDGE_MESSAGE if self._searches_since_write > _SEARCH_NUDGE_THRESHOLD else None
         )
         return _to_dict(SearchResponse(results=items, nudge=nudge))
 
@@ -287,14 +265,10 @@ class MemoryService:
     def memory_context(self, *, n: int = 10) -> dict:
         return _to_dict(self.session_manager.get_recent_context(n=n))
 
-    def memory_session_summary(
-        self, *, summary: str, agent_source: str | None = None
-    ) -> dict:
+    def memory_session_summary(self, *, summary: str, agent_source: str | None = None) -> dict:
         self._reset_search_nudge()
         return _to_dict(
-            self.session_manager.save_summary(
-                summary=summary, agent_source=agent_source
-            )
+            self.session_manager.save_summary(summary=summary, agent_source=agent_source)
         )
 
     def memory_session_start(self, *, agent_source: str | None = None) -> dict:
@@ -356,9 +330,7 @@ class MemoryService:
         )
 
         entries = [
-            self._build_memory_entry(
-                item_id=item_id, document=document, metadata=metadata
-            )
+            self._build_memory_entry(item_id=item_id, document=document, metadata=metadata)
             for item_id, document, metadata in zip(
                 result["ids"], result["documents"], result["metadatas"], strict=False
             )
@@ -473,9 +445,7 @@ class MemoryService:
 
     # --- Private helpers ---
 
-    def _bm25_candidates(
-        self, content: str, *, exclude_id: str
-    ) -> list[ConflictCandidate]:
+    def _bm25_candidates(self, content: str, *, exclude_id: str) -> list[ConflictCandidate]:
         """Return up to _CONFLICT_CANDIDATES_LIMIT existing memories most similar to content (BM25)."""
         try:
             from rank_bm25 import BM25Okapi
@@ -499,7 +469,7 @@ class MemoryService:
             return []
 
         cand_ids, cand_docs, cand_metas = zip(*candidates, strict=False)
-        corpus_texts = [f"{m['title']} {d}" for d, m in zip(cand_docs, cand_metas)]
+        corpus_texts = [f"{m['title']} {d}" for d, m in zip(cand_docs, cand_metas, strict=False)]
         tokenized = [text.lower().split() for text in corpus_texts]
         bm25 = BM25Okapi(tokenized)
 
@@ -524,9 +494,7 @@ class MemoryService:
         self._searches_since_write = 0
 
     @staticmethod
-    def _build_memory_entry(
-        *, item_id: str, document: str, metadata: dict
-    ) -> ContextEntry:
+    def _build_memory_entry(*, item_id: str, document: str, metadata: dict) -> ContextEntry:
         updated_at_str = str(metadata.get("updated_at", ""))
         last_accessed_str = str(metadata.get("last_accessed_at", ""))
         return ContextEntry(
@@ -540,9 +508,7 @@ class MemoryService:
             agent_source=str(metadata["agent_source"]),
             revision_count=int(metadata.get("revision_count", 1)),
             updated_at=_parse_timestamp(updated_at_str) if updated_at_str else None,
-            last_accessed_at=_parse_timestamp(last_accessed_str)
-            if last_accessed_str
-            else None,
+            last_accessed_at=_parse_timestamp(last_accessed_str) if last_accessed_str else None,
         )
 
     @staticmethod

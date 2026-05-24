@@ -4,12 +4,7 @@ from pathlib import Path
 
 
 def _plugin_path(slug: str) -> Path:
-    return (
-        Path(__file__).resolve().parents[2]
-        / ".opencode"
-        / "plugins"
-        / f"nerv-{slug}.js"
-    )
+    return Path(__file__).resolve().parents[2] / ".opencode" / "plugins" / f"nerv-{slug}.js"
 
 
 class TestLifecyclePlugin:

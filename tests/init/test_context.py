@@ -50,9 +50,7 @@ def test_project_context_to_dict():
 def test_project_context_validates_project_name():
     """Test that empty or invalid project names raise ValidationError."""
     with pytest.raises(ValidationError):
-        ProjectContext.build(
-            project_name="", stack=Stack.PYTHON, project_root=Path("/tmp")
-        )
+        ProjectContext.build(project_name="", stack=Stack.PYTHON, project_root=Path("/tmp"))
 
 
 def test_stack_validation():

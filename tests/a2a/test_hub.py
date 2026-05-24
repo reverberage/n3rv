@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from aiohttp.test_utils import TestClient, TestServer
 import pytest
+from aiohttp.test_utils import TestClient, TestServer
 
 from nerv.a2a.hub import A2AHub
 
@@ -56,9 +56,7 @@ async def test_tasks_send_persists_completed_task(runtime_settings) -> None:
         assert response.status == 200
         task = payload["result"]
         assert task["status"]["state"] == "completed"
-        task_path = (
-            runtime_settings.paths.hub_state_dir / "tasks" / f"{task['id']}.json"
-        )
+        task_path = runtime_settings.paths.hub_state_dir / "tasks" / f"{task['id']}.json"
         assert task_path.exists()
     finally:
         await client.close()

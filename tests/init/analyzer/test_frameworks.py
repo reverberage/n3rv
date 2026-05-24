@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 from nerv.init.analyzer.frameworks import FrameworkDetector
 from nerv.init.context import Stack
 

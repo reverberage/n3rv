@@ -104,9 +104,7 @@ def test_update_only_overwrite_targets_only_overwrite_files(initialized_project:
     hook.write_text("# custom hook\n")
     agents_md.write_text("# custom agents rules\n")
 
-    result = run_update(
-        initialized_project, dry_run=False, force_commands=False, only="overwrite"
-    )
+    result = run_update(initialized_project, dry_run=False, force_commands=False, only="overwrite")
 
     assert result == 0
     assert hook.read_text() != "# custom hook\n"
@@ -116,9 +114,7 @@ def test_update_only_overwrite_targets_only_overwrite_files(initialized_project:
 
 def test_update_only_rejects_unknown_category(initialized_project: Path):
     """Test --only rejects unknown category values."""
-    result = runner.invoke(
-        app, ["update", "--only", "unknown", "--root", str(initialized_project)]
-    )
+    result = runner.invoke(app, ["update", "--only", "unknown", "--root", str(initialized_project)])
     assert result.exit_code == 1
     assert "Unknown update category" in result.output
 

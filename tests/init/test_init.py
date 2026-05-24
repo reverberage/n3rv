@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 from nerv.init import run_init
 from nerv.init.update import run_update
 

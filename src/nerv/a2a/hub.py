@@ -91,7 +91,10 @@ class A2AHub:
                     task.id,
                     state=TaskState.FAILED,
                     error_code="RESTART_RECOVERY",
-                    error_message="Hub restarted while task was in progress. Task state is unknown and must be retried manually.",
+                    error_message=(
+                        "Hub restarted while task was in progress. "
+                        "Task state is unknown and must be retried manually."
+                    ),
                     metadata={
                         **task.metadata,
                         "recovery_timestamp": datetime.now(UTC).isoformat(),
@@ -106,9 +109,7 @@ class A2AHub:
 
     async def get_health(self, request: web.Request) -> web.Response:
         logger.debug("GET /health")
-        return web.json_response(
-            {"status": "ok", "project": self.settings.project_name}
-        )
+        return web.json_response({"status": "ok", "project": self.settings.project_name})
 
     async def get_hub_card(self, request: web.Request) -> web.Response:
         logger.debug("GET /.well-known/agent.json")
@@ -132,9 +133,7 @@ class A2AHub:
         task_id = request.query.get("task_id")
 
         if not agent_id and not task_id:
-            raise web.HTTPBadRequest(
-                text="Either agent_id or task_id query parameter is required"
-            )
+            raise web.HTTPBadRequest(text="Either agent_id or task_id query parameter is required")
 
         response = web.StreamResponse(
             status=200,
@@ -152,9 +151,7 @@ class A2AHub:
                 async for event_data in self.state.subscribe(task_id):
                     response.write(_format_sse_event(event_data))
                 response.write(
-                    _format_sse_event(
-                        {"type": "done", "task_id": task_id}, event_type="stream-end"
-                    )
+                    _format_sse_event({"type": "done", "task_id": task_id}, event_type="stream-end")
                 )
             elif agent_id:
                 async for event_data in self.state.subscribe_agent(agent_id):
@@ -361,13 +358,9 @@ class A2AHub:
         inner = exc.exceptions[0] if isinstance(exc, BaseExceptionGroup) else exc
         if isinstance(inner, SkillNotFoundError):
             logger.warning("task=%s SKILL_NOT_FOUND: %s", task_id, inner)
-            return self._fail_task(
-                task_id, error_code="SKILL_NOT_FOUND", error_message=str(inner)
-            )
+            return self._fail_task(task_id, error_code="SKILL_NOT_FOUND", error_message=str(inner))
         logger.exception("task=%s DELEGATION_FAILED: %s", task_id, exc)
-        return self._fail_task(
-            task_id, error_code="DELEGATION_FAILED", error_message=str(exc)
-        )
+        return self._fail_task(task_id, error_code="DELEGATION_FAILED", error_message=str(exc))
 
     def _load_task_or_fail(self, task_id: str):
         """Load task or raise KeyError."""

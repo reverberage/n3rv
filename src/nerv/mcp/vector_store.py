@@ -11,7 +11,7 @@ from pathlib import Path
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from chromadb import PersistentClient
-from chromadb.api.types import EmbeddingFunction, Embeddings, Documents
+from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 
 from nerv.config import RuntimeSettings
 from nerv.models.memory import MemoryScope
@@ -95,9 +95,7 @@ class VectorStore:
         self.settings.paths.memory_dir.mkdir(parents=True, exist_ok=True)
 
     def save(self, *, document_id: str, content: str, metadata: dict) -> None:
-        self.collection.upsert(
-            ids=[document_id], documents=[content], metadatas=[metadata]
-        )
+        self.collection.upsert(ids=[document_id], documents=[content], metadatas=[metadata])
 
     def get(
         self,
@@ -138,9 +136,7 @@ class VectorStore:
     def delete(self, ids: list[str]) -> None:
         self.collection.delete(ids=ids)
 
-    def get_all(
-        self, where: dict | None = None, include: list[str] | None = None
-    ) -> dict:
+    def get_all(self, where: dict | None = None, include: list[str] | None = None) -> dict:
         return self.get(where=where, include=include)
 
     def _active_where(self, *filters: dict[str, object]) -> dict[str, object]:
@@ -214,9 +210,7 @@ class VectorStore:
                 updated_metadata["updated_at"] = str(updated_metadata["timestamp"])
                 changed = True
             if "last_accessed_at" not in updated_metadata:
-                updated_metadata["last_accessed_at"] = str(
-                    updated_metadata["timestamp"]
-                )
+                updated_metadata["last_accessed_at"] = str(updated_metadata["timestamp"])
                 changed = True
 
             if changed:

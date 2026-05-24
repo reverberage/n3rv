@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 from nerv.init.context import Stack
 from nerv.init.detector import detect_stack
 

@@ -130,9 +130,7 @@ def build_hub_server(project_root: Path | None = None):
             "Provide the task_id from check_pending_tasks or list_pending_tasks and a result summary."
         )
     )
-    async def complete_task(
-        task_id: str, result: str, completing_agent: str = "unknown"
-    ) -> dict:
+    async def complete_task(task_id: str, result: str, completing_agent: str = "unknown") -> dict:
         out = _rpc(
             hub_url,
             "tasks/complete",

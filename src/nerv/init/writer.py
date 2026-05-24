@@ -41,7 +41,7 @@ def write_file(
     Returns:
         WriteResult indicating what happened
     """
-    from nerv.init.update import MARKER_START, MARKER_END
+    from nerv.init.update import MARKER_END, MARKER_START
 
     if target.exists() and not force:
         if use_markers:
@@ -125,16 +125,14 @@ def validate_markers(content: str) -> list[str]:
     Returns:
         List of warning strings (empty if no issues)
     """
-    from nerv.init.update import MARKER_START, MARKER_END
+    from nerv.init.update import MARKER_END, MARKER_START
 
     start_count = content.count(MARKER_START)
     end_count = content.count(MARKER_END)
 
     warnings: list[str] = []
     if start_count != end_count:
-        warnings.append(
-            f"Mismatched markers: {start_count} start-tags vs {end_count} end-tags"
-        )
+        warnings.append(f"Mismatched markers: {start_count} start-tags vs {end_count} end-tags")
     if start_count > 1:
         warnings.append(
             f"Multiple marker sections ({start_count} pairs) — only first pair guaranteed"

@@ -9,7 +9,6 @@ from nerv.init.analyzer.mappings import EXCLUDED_DIRS
 from nerv.init.analyzer.profile import StructureInfo
 from nerv.init.context import Stack
 
-
 _STRUCTURE_DIRS: dict[str, str] = {
     "src": "has_src_dir",
     "tests": "has_tests_dir",
@@ -20,9 +19,7 @@ _STRUCTURE_DIRS: dict[str, str] = {
 }
 
 
-_WEB_EXTENSIONS: frozenset[str] = frozenset(
-    {".html", ".htm", ".css", ".js", ".mjs", ".cjs"}
-)
+_WEB_EXTENSIONS: frozenset[str] = frozenset({".html", ".htm", ".css", ".js", ".mjs", ".cjs"})
 _WEB_DIRS: frozenset[str] = frozenset({"css", "js", "assets", "public", "static"})
 
 

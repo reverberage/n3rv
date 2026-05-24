@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from nerv.models.a2a import AgentSkill, NervAgentCard
 from nerv.mcp.memory_service import MemoryService
+from nerv.models.a2a import AgentSkill, NervAgentCard
 
 if TYPE_CHECKING:
     from nerv.init.registry import SkillRegistry
@@ -97,9 +97,7 @@ class TaskRouter:
             agent_id,
             len(context),
         )
-        return RoutingDecision(
-            agent_id=agent_id, card=card, skill=skill, context=context
-        )
+        return RoutingDecision(agent_id=agent_id, card=card, skill=skill, context=context)
 
     def _infer_skill(self, description: str) -> str:
         """Infer skill_id from description keywords.

@@ -15,7 +15,6 @@ from nerv.init.analyzer.mappings import (
 from nerv.init.analyzer.profile import FrameworkInfo
 from nerv.init.context import Stack
 
-
 _PEP508_NAME_RE = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?")
 
 

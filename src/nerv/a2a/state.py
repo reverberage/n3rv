@@ -153,15 +153,13 @@ class HubStateStore:
         tasks = []
         for task_file in self.tasks_dir.glob("task-*.json"):
             try:
-                task = HubTaskRecord.model_validate_json(
-                    task_file.read_text(encoding="utf-8")
-                )
+                task = HubTaskRecord.model_validate_json(task_file.read_text(encoding="utf-8"))
                 tasks.append(task)
             except Exception:
                 continue
         return tasks
 
-    async def subscribe(self, task_id: str) -> AsyncGenerator[dict, None]:
+    async def subscribe(self, task_id: str) -> AsyncGenerator[dict]:
         """SSE subscription: yields task state on updates via asyncio.Event.
 
         Yields initial state immediately, then waits for update_task()
@@ -192,7 +190,7 @@ class HubStateStore:
         finally:
             self._task_events.pop(task_id, None)
 
-    async def subscribe_agent(self, agent_id: str) -> AsyncGenerator[dict, None]:
+    async def subscribe_agent(self, agent_id: str) -> AsyncGenerator[dict]:
         """SSE subscription for all tasks assigned to an agent.
 
         Yields initial state for existing tasks, then yields updates
@@ -202,11 +200,7 @@ class HubStateStore:
         agent_id_lower = agent_id.lower()
 
         def _tasks_for_agent() -> list[HubTaskRecord]:
-            return [
-                t
-                for t in self.list_tasks()
-                if t.assigned_agent.lower() == agent_id_lower
-            ]
+            return [t for t in self.list_tasks() if t.assigned_agent.lower() == agent_id_lower]
 
         for task in _tasks_for_agent():
             seen_ids.add(task.id)

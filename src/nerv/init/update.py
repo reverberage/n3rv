@@ -8,12 +8,12 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+from nerv.init.analyzer import analyze_project
 from nerv.init.context import ProjectContext
 from nerv.init.detector import detect_stack
 from nerv.init.registry import write_registry
 from nerv.init.renderer import TemplateEngine
-from nerv.init.writer import validate_markers, write_file, MARKER_START, MARKER_END
-from nerv.init.analyzer import analyze_project
+from nerv.init.writer import MARKER_END, MARKER_START, validate_markers, write_file
 
 
 class UpdateStrategy(StrEnum):
@@ -67,9 +67,7 @@ class UpdateSummary:
 
     @property
     def updated_count(self) -> int:
-        return sum(
-            1 for r in self.results if r.result in ("CREATED", "UPDATED", "OVERWRITTEN")
-        )
+        return sum(1 for r in self.results if r.result in ("CREATED", "UPDATED", "OVERWRITTEN"))
 
     @property
     def skipped_count(self) -> int:
@@ -86,9 +84,7 @@ FILE_UPDATE_MANIFEST: list[UpdateEntry] = [
         "AGENTS.md",
         UpdateStrategy.MARKER_MERGE,
     ),
-    UpdateEntry(
-        "nerv/a2a-config.yaml.j2", ".nerv/a2a-config.yaml", UpdateStrategy.OVERWRITE
-    ),
+    UpdateEntry("nerv/a2a-config.yaml.j2", ".nerv/a2a-config.yaml", UpdateStrategy.OVERWRITE),
     UpdateEntry(
         "nerv/systemd/nerv-hub.service.j2",
         ".nerv/systemd/nerv-hub.service",
@@ -279,9 +275,7 @@ def _resolve_only_category(only: str) -> UpdateStrategy:
                 "create-if-missing",
             ]
         )
-        raise ValueError(
-            f"Unknown update category: {only}. Allowed values: {allowed}"
-        ) from exc
+        raise ValueError(f"Unknown update category: {only}. Allowed values: {allowed}") from exc
 
 
 def _select_manifest_entries(only: str | None) -> list[UpdateEntry]:
@@ -327,14 +321,10 @@ def run_update(
             tpl_name = f"opencode/commands/{tool.name}.md.j2"
             out_path = f".opencode/commands/{tool.name}.md"
             if (template_dir / tpl_name).exists():
-                entries.append(
-                    UpdateEntry(tpl_name, out_path, UpdateStrategy.CREATE_IF_MISSING)
-                )
+                entries.append(UpdateEntry(tpl_name, out_path, UpdateStrategy.CREATE_IF_MISSING))
 
         for entry in entries:
-            result = _process_entry(
-                entry, root, engine, render_ctx, dry_run, force_commands
-            )
+            result = _process_entry(entry, root, engine, render_ctx, dry_run, force_commands)
             summary.results.append(result)
             _print_result(result, dry_run)
 
@@ -385,9 +375,7 @@ def _process_entry(
             )
 
     except Exception as exc:
-        return UpdateResult(
-            entry.output_path, entry.strategy, "ERROR", warning=str(exc)
-        )
+        return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=str(exc))
 
 
 def _handle_marker_merge(
@@ -466,9 +454,7 @@ def _handle_json_merge(
         if not target.exists():
             if not dry_run:
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(
-                    json.dumps(template_data, indent=4) + "\n", encoding="utf-8"
-                )
+                target.write_text(json.dumps(template_data, indent=4) + "\n", encoding="utf-8")
             return UpdateResult(entry.output_path, entry.strategy, "CREATED")
 
         try:
@@ -489,9 +475,7 @@ def _handle_json_merge(
         return UpdateResult(entry.output_path, entry.strategy, "UPDATED")
 
     except Exception as exc:
-        return UpdateResult(
-            entry.output_path, entry.strategy, "ERROR", warning=str(exc)
-        )
+        return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=str(exc))
 
 
 def _handle_overwrite(

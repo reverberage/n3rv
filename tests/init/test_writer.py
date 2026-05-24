@@ -6,7 +6,6 @@ import os
 import subprocess
 from pathlib import Path
 
-
 from nerv.init.writer import (
     MARKER_END,
     MARKER_START,

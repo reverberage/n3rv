@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 from nerv.init.analyzer.structure import StructureDetector
 from nerv.init.context import Stack
 

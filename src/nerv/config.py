@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-import yaml
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from nerv.platform import project_relative_path, resolve_project_root
@@ -26,7 +26,7 @@ class RuntimePaths(BaseModel):
         return self.logs_dir / "hub.log"
 
     @classmethod
-    def from_project_root(cls, project_root: Path) -> "RuntimePaths":
+    def from_project_root(cls, project_root: Path) -> RuntimePaths:
         return cls(
             project_root=project_root,
             memory_dir=project_relative_path(project_root, ".nerv", "memory"),

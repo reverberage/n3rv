@@ -86,18 +86,12 @@ def build_memory_server(project_root: Path | None = None):
     @server.tool(description="Persist a session summary as a memory of type summary.")
     async def memory_session_summary(summary: str) -> dict:
         return result_payload(
-            service.memory_session_summary(
-                summary=summary, agent_source=detect_agent_source()
-            )
+            service.memory_session_summary(summary=summary, agent_source=detect_agent_source())
         )
 
-    @server.tool(
-        description="Persist a session-start context entry and return the new session id."
-    )
+    @server.tool(description="Persist a session-start context entry and return the new session id.")
     async def memory_session_start() -> dict:
-        return result_payload(
-            service.memory_session_start(agent_source=detect_agent_source())
-        )
+        return result_payload(service.memory_session_start(agent_source=detect_agent_source()))
 
     @server.tool(description="Return aggregate counts for active memories.")
     async def memory_stats() -> dict:
@@ -105,13 +99,9 @@ def build_memory_server(project_root: Path | None = None):
 
     @server.tool(description="Return active memories surrounding a focus memory id.")
     async def memory_timeline(id: str, before: int = 5, after: int = 5) -> dict:
-        return result_payload(
-            service.memory_timeline(id=id, before=before, after=after)
-        )
+        return result_payload(service.memory_timeline(id=id, before=before, after=after))
 
-    @server.tool(
-        description="Record an agent verdict on the relationship between two memories."
-    )
+    @server.tool(description="Record an agent verdict on the relationship between two memories.")
     async def memory_judge(
         source_id: str, target_id: str, verdict: str, reason: str | None = None
     ) -> dict:

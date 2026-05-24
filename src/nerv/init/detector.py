@@ -68,11 +68,7 @@ def _extract_from_pyproject(path: Path) -> str | None:
             data = tomllib.load(f)
         if "project" in data and "name" in data["project"]:
             return data["project"]["name"]
-        if (
-            "tool" in data
-            and "poetry" in data["tool"]
-            and "name" in data["tool"]["poetry"]
-        ):
+        if "tool" in data and "poetry" in data["tool"] and "name" in data["tool"]["poetry"]:
             return data["tool"]["poetry"]["name"]
     except Exception:
         pass

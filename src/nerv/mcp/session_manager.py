@@ -5,16 +5,16 @@ from __future__ import annotations
 import logging
 from uuid import uuid4
 
+from nerv.mcp.vector_store import VectorStore, _parse_timestamp
 from nerv.models.memory import (
     ContextEntry,
     ContextResult,
-    MemoryType,
     MemoryScope,
+    MemoryType,
     RecallResult,
     SaveResult,
     SessionStartResult,
 )
-from nerv.mcp.vector_store import VectorStore, _parse_timestamp
 
 logger = logging.getLogger("nerv.mcp.session")
 
@@ -46,9 +46,7 @@ class SessionManager:
         session_id = uuid4().hex
 
         self.vector_store.save(
-            document_id=self.vector_store.make_document_id(
-                f"session-start-{session_id[:8]}"
-            ),
+            document_id=self.vector_store.make_document_id(f"session-start-{session_id[:8]}"),
             content=f"Session started at {started_at.isoformat()}",
             metadata={
                 "title": f"Session start - {session_id[:8]}",
@@ -70,13 +68,9 @@ class SessionManager:
         context = self._load_session_context(
             types=_SESSION_CONTEXT_TYPES, limit=_SESSION_CONTEXT_LIMIT
         )
-        return SessionStartResult(
-            session_id=session_id, started_at=started_at, context=context
-        )
+        return SessionStartResult(session_id=session_id, started_at=started_at, context=context)
 
-    def save_summary(
-        self, *, summary: str, agent_source: str | None = None
-    ) -> SaveResult:
+    def save_summary(self, *, summary: str, agent_source: str | None = None) -> SaveResult:
         """Persist a session summary as type=summary, scope=session."""
         timestamp = self.vector_store.now()
         title = f"Session summary - {timestamp.isoformat()}"
@@ -164,9 +158,7 @@ class SessionManager:
             agent_source=entry.agent_source,
         )
 
-    def _load_session_context(
-        self, *, types: list[MemoryType], limit: int
-    ) -> list[ContextEntry]:
+    def _load_session_context(self, *, types: list[MemoryType], limit: int) -> list[ContextEntry]:
         """Return recent project-scoped memories of high-value types for session injection."""
         type_values = [t.value for t in types]
         result = self.vector_store.get_all(
@@ -187,9 +179,7 @@ class SessionManager:
         return entries[:limit]
 
     @staticmethod
-    def _build_context_entry(
-        item_id: str, document: str, metadata: dict
-    ) -> ContextEntry:
+    def _build_context_entry(item_id: str, document: str, metadata: dict) -> ContextEntry:
         """Build a ContextEntry from raw ChromaDB data."""
         updated_at_str = str(metadata.get("updated_at", ""))
         last_accessed_str = str(metadata.get("last_accessed_at", ""))
@@ -205,7 +195,5 @@ class SessionManager:
             agent_source=str(metadata["agent_source"]),
             revision_count=int(metadata.get("revision_count", 1)),
             updated_at=_parse_timestamp(updated_at_str) if updated_at_str else None,
-            last_accessed_at=_parse_timestamp(last_accessed_str)
-            if last_accessed_str
-            else None,
+            last_accessed_at=_parse_timestamp(last_accessed_str) if last_accessed_str else None,
         )
