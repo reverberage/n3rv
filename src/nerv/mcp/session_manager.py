@@ -65,9 +65,7 @@ class SessionManager:
             },
         )
 
-        context = self._load_session_context(
-            types=_SESSION_CONTEXT_TYPES, limit=_SESSION_CONTEXT_LIMIT
-        )
+        context = self._load_session_context(types=_SESSION_CONTEXT_TYPES, limit=_SESSION_CONTEXT_LIMIT)
         return SessionStartResult(session_id=session_id, started_at=started_at, context=context)
 
     def save_summary(self, *, summary: str, agent_source: str | None = None) -> SaveResult:
@@ -116,9 +114,7 @@ class SessionManager:
         )
 
         entries: list[ContextEntry] = []
-        for item_id, document, metadata in zip(
-            result["ids"], result["documents"], result["metadatas"], strict=False
-        ):
+        for item_id, document, metadata in zip(result["ids"], result["documents"], result["metadatas"], strict=False):
             entries.append(self._build_context_entry(item_id, document, metadata))
 
         entries.sort(key=lambda e: e.timestamp, reverse=True)
@@ -171,9 +167,7 @@ class SessionManager:
 
         entries = [
             self._build_context_entry(item_id, doc, meta)
-            for item_id, doc, meta in zip(
-                result["ids"], result["documents"], result["metadatas"], strict=False
-            )
+            for item_id, doc, meta in zip(result["ids"], result["documents"], result["metadatas"], strict=False)
         ]
         entries.sort(key=lambda e: e.timestamp, reverse=True)
         return entries[:limit]

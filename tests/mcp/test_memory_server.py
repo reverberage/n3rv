@@ -217,18 +217,10 @@ def test_memory_timeline_returns_neighboring_entries(runtime_settings, monkeypat
     monkeypatch.setattr(VectorStore, "now", staticmethod(lambda: next(timestamps)))
     service = MemoryService(runtime_settings)
 
-    oldest = service.memory_save(
-        content="Oldest context", title="Oldest", type="context", topic_key="oldest"
-    )
-    older = service.memory_save(
-        content="Older context", title="Older", type="context", topic_key="older"
-    )
-    focus = service.memory_save(
-        content="Focus context", title="Focus", type="context", topic_key="focus"
-    )
-    newest = service.memory_save(
-        content="Newest context", title="Newest", type="context", topic_key="newest"
-    )
+    oldest = service.memory_save(content="Oldest context", title="Oldest", type="context", topic_key="oldest")
+    older = service.memory_save(content="Older context", title="Older", type="context", topic_key="older")
+    focus = service.memory_save(content="Focus context", title="Focus", type="context", topic_key="focus")
+    newest = service.memory_save(content="Newest context", title="Newest", type="context", topic_key="newest")
 
     timeline = service.memory_timeline(id=focus["id"], before=2, after=1)
 
@@ -245,9 +237,7 @@ def test_memory_timeline_returns_neighboring_entries(runtime_settings, monkeypat
 
 def test_memory_timeline_raises_for_soft_deleted_memory(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(
-        content="Soon deleted", title="Deleted", type="note", topic_key="deleted-note"
-    )
+    saved = service.memory_save(content="Soon deleted", title="Deleted", type="note", topic_key="deleted-note")
     service.memory_delete(id=saved["id"])
 
     with pytest.raises(KeyError, match=saved["id"]):
@@ -319,9 +309,7 @@ def test_memory_store_migrates_legacy_metadata(runtime_settings) -> None:
     )
 
     migrated = MemoryService(runtime_settings)
-    record = migrated.vector_store.collection.get(
-        ids=["legacy-memory-01"], include=["documents", "metadatas"]
-    )
+    record = migrated.vector_store.collection.get(ids=["legacy-memory-01"], include=["documents", "metadatas"])
     metadata = record["metadatas"][0]
 
     assert metadata["scope"] == "personal"
@@ -380,9 +368,7 @@ def test_memory_search_nudges_after_threshold(runtime_settings) -> None:
 
 def test_memory_save_resets_nudge_counter(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(
-        content="Seed to search.", title="Seed", type="note", topic_key="seed-reset"
-    )
+    service.memory_save(content="Seed to search.", title="Seed", type="note", topic_key="seed-reset")
 
     THRESHOLD = 3
     for _ in range(THRESHOLD + 1):
@@ -428,9 +414,7 @@ def test_memory_session_summary_resets_nudge_counter(runtime_settings) -> None:
 
 def test_memory_get_returns_full_content(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(
-        content="Full content here.", title="Full", type="note", topic_key="full-get"
-    )
+    saved = service.memory_save(content="Full content here.", title="Full", type="note", topic_key="full-get")
     result = service.memory_get(id=saved["id"])
 
     assert result["content"] == "Full content here."
@@ -439,9 +423,7 @@ def test_memory_get_returns_full_content(runtime_settings) -> None:
 
 def test_memory_get_raises_for_soft_deleted(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(
-        content="To be deleted.", title="Del", type="note", topic_key="del-get"
-    )
+    saved = service.memory_save(content="To be deleted.", title="Del", type="note", topic_key="del-get")
     service.memory_delete(id=saved["id"])
 
     with pytest.raises(KeyError):
@@ -505,9 +487,7 @@ def test_memory_search_includes_personal_when_requested(runtime_settings) -> Non
 def test_revision_count_increments_on_topic_update(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
     service.memory_save(content="Version one.", title="Rev", type="decision", topic_key="rev-track")
-    second = service.memory_save(
-        content="Version two.", title="Rev", type="decision", topic_key="rev-track"
-    )
+    second = service.memory_save(content="Version two.", title="Rev", type="decision", topic_key="rev-track")
 
     assert second["revision_count"] == 2
 
@@ -515,9 +495,7 @@ def test_revision_count_increments_on_topic_update(runtime_settings) -> None:
 def test_revision_count_not_incremented_on_duplicate(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
     service.memory_save(content="Same content.", title="Dup", type="note", topic_key="dup-rev")
-    second = service.memory_save(
-        content="Same content.", title="Dup", type="note", topic_key="dup-rev"
-    )
+    second = service.memory_save(content="Same content.", title="Dup", type="note", topic_key="dup-rev")
 
     assert second["revision_count"] == 1
     assert second["status"] == "duplicate"
@@ -538,9 +516,7 @@ def test_same_topic_same_content_is_topic_duplicate(runtime_settings) -> None:
 
 def test_last_accessed_at_updated_on_recall(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    service.memory_save(
-        content="Recall me.", title="Recall", type="note", topic_key="recall-access"
-    )
+    service.memory_save(content="Recall me.", title="Recall", type="note", topic_key="recall-access")
 
     service.memory_recall(topic_key="recall-access")
     result = service.memory_get(id=service.memory_recall(topic_key="recall-access")["id"])
@@ -681,12 +657,8 @@ def test_bm25_no_conflicts_on_first_save(runtime_settings) -> None:
 
 def test_memory_judge_stores_verdict(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    a = service.memory_save(
-        content="Old approach.", title="A", type="decision", topic_key="judge-a"
-    )
-    b = service.memory_save(
-        content="New approach.", title="B", type="decision", topic_key="judge-b"
-    )
+    a = service.memory_save(content="Old approach.", title="A", type="decision", topic_key="judge-a")
+    b = service.memory_save(content="New approach.", title="B", type="decision", topic_key="judge-b")
 
     result = service.memory_judge(
         source_id=b["id"],
@@ -700,9 +672,7 @@ def test_memory_judge_stores_verdict(runtime_settings) -> None:
 
 def test_memory_judge_raises_for_unknown_id(runtime_settings) -> None:
     service = MemoryService(runtime_settings)
-    saved = service.memory_save(
-        content="Known.", title="Known", type="note", topic_key="judge-known"
-    )
+    saved = service.memory_save(content="Known.", title="Known", type="note", topic_key="judge-known")
 
     with pytest.raises(KeyError):
         service.memory_judge(source_id=saved["id"], target_id="unknown-id", verdict="related")

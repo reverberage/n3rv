@@ -124,9 +124,7 @@ class FrameworkDetector:
 
         return self._match_frameworks(dep_names, KNOWN_FRAMEWORKS)
 
-    def _match_frameworks(
-        self, dep_names: set[str], mappings: dict[str, FrameworkMapping]
-    ) -> list[FrameworkInfo]:
+    def _match_frameworks(self, dep_names: set[str], mappings: dict[str, FrameworkMapping]) -> list[FrameworkInfo]:
         seen: set[str] = set()
         results: list[FrameworkInfo] = []
 

@@ -65,9 +65,7 @@ class TestMCPRecommender:
         for stack in (Stack.GENERIC, Stack.NODE, Stack.GO):
             servers = recommender.detect(tmp_path, stack, structure)
             names = {s.name for s in servers}
-            assert "sequential-thinking" not in names, (
-                f"sequential-thinking present for stack={stack}"
-            )
+            assert "sequential-thinking" not in names, f"sequential-thinking present for stack={stack}"
 
     def test_no_duplicate_servers(self, tmp_path: Path) -> None:
         """Even when multiple conditions match, servers are deduplicated."""
@@ -110,6 +108,4 @@ class TestMCPRecommender:
             if first is None:
                 first = current
             else:
-                assert first == current, (
-                    f"Universal servers differ for stack={stack}: {current} vs {first}"
-                )
+                assert first == current, f"Universal servers differ for stack={stack}: {current} vs {first}"

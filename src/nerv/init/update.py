@@ -378,9 +378,7 @@ def _process_entry(
         return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=str(exc))
 
 
-def _handle_marker_merge(
-    entry: UpdateEntry, target: Path, content: str, dry_run: bool
-) -> UpdateResult:
+def _handle_marker_merge(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
     content_clean = content
     if MARKER_START in content and MARKER_END in content:
         start_idx = content.find(MARKER_START)
@@ -432,14 +430,10 @@ def _handle_marker_merge(
                 warning=warnings[0] if warnings else None,
             )
     else:
-        return UpdateResult(
-            entry.output_path, entry.strategy, "SKIPPED", warning="No markers found"
-        )
+        return UpdateResult(entry.output_path, entry.strategy, "SKIPPED", warning="No markers found")
 
 
-def _handle_json_merge(
-    entry: UpdateEntry, target: Path, content: str, dry_run: bool
-) -> UpdateResult:
+def _handle_json_merge(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
     try:
         try:
             template_data = json.loads(content)
@@ -478,9 +472,7 @@ def _handle_json_merge(
         return UpdateResult(entry.output_path, entry.strategy, "ERROR", warning=str(exc))
 
 
-def _handle_overwrite(
-    entry: UpdateEntry, target: Path, content: str, dry_run: bool
-) -> UpdateResult:
+def _handle_overwrite(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
     if not dry_run:
         result = write_file(
             target,
@@ -511,9 +503,7 @@ def _handle_skip_default(
         return _handle_overwrite(entry, target, content, dry_run)
 
 
-def _handle_create_if_missing(
-    entry: UpdateEntry, target: Path, content: str, dry_run: bool
-) -> UpdateResult:
+def _handle_create_if_missing(entry: UpdateEntry, target: Path, content: str, dry_run: bool) -> UpdateResult:
     if target.exists():
         return UpdateResult(entry.output_path, entry.strategy, "SKIPPED")
 

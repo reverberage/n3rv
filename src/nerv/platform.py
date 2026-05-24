@@ -32,9 +32,7 @@ def resolve_project_root(start: str | Path | None = None, max_depth: int = 10) -
             break
         current = current.parent
 
-    raise ProjectRootNotFoundError(
-        "Could not detect project root. Run from inside a project directory."
-    )
+    raise ProjectRootNotFoundError("Could not detect project root. Run from inside a project directory.")
 
 
 def project_relative_path(project_root: Path, *parts: str) -> Path:

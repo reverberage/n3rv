@@ -134,9 +134,7 @@ def validate_markers(content: str) -> list[str]:
     if start_count != end_count:
         warnings.append(f"Mismatched markers: {start_count} start-tags vs {end_count} end-tags")
     if start_count > 1:
-        warnings.append(
-            f"Multiple marker sections ({start_count} pairs) — only first pair guaranteed"
-        )
+        warnings.append(f"Multiple marker sections ({start_count} pairs) — only first pair guaranteed")
     if start_count == 0 and end_count == 0:
         return []
 

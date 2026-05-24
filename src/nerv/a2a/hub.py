@@ -39,9 +39,7 @@ class A2AHub:
         self.cards = load_agent_cards(settings)
         self.memory = MemoryService(settings)
         self.registry = SkillRegistry.scan(settings.paths.project_root)
-        self.router = TaskRouter(
-            cards=self.cards, memory_service=self.memory, registry=self.registry
-        )
+        self.router = TaskRouter(cards=self.cards, memory_service=self.memory, registry=self.registry)
         self.state = HubStateStore(settings)
 
     def create_app(self) -> web.Application:
@@ -92,8 +90,7 @@ class A2AHub:
                     state=TaskState.FAILED,
                     error_code="RESTART_RECOVERY",
                     error_message=(
-                        "Hub restarted while task was in progress. "
-                        "Task state is unknown and must be retried manually."
+                        "Hub restarted while task was in progress. Task state is unknown and must be retried manually."
                     ),
                     metadata={
                         **task.metadata,
@@ -150,9 +147,7 @@ class A2AHub:
             if task_id:
                 async for event_data in self.state.subscribe(task_id):
                     response.write(_format_sse_event(event_data))
-                response.write(
-                    _format_sse_event({"type": "done", "task_id": task_id}, event_type="stream-end")
-                )
+                response.write(_format_sse_event({"type": "done", "task_id": task_id}, event_type="stream-end"))
             elif agent_id:
                 async for event_data in self.state.subscribe_agent(agent_id):
                     response.write(_format_sse_event(event_data))
@@ -521,9 +516,7 @@ def main() -> None:
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(log_level)
-    file_handler = RotatingFileHandler(
-        settings.paths.log_file, maxBytes=10 * 1024 * 1024, backupCount=3
-    )
+    file_handler = RotatingFileHandler(settings.paths.log_file, maxBytes=10 * 1024 * 1024, backupCount=3)
     file_handler.setLevel(log_level)
     for handler in (console_handler, file_handler):
         handler.setFormatter(

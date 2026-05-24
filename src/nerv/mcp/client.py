@@ -101,9 +101,7 @@ class HubMCPBridge:
     async def close(self) -> None:
         return None
 
-    async def memory_search(
-        self, *, query: str, limit: int = 5, type_filter: str | None = None
-    ) -> dict:
+    async def memory_search(self, *, query: str, limit: int = 5, type_filter: str | None = None) -> dict:
         result = await self.memory.call_tool(
             "memory_search",
             {"query": query, "limit": limit, "type_filter": type_filter},

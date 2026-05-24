@@ -98,9 +98,7 @@ class MemoryService:
                 document_id = existing["ids"][0]
                 existing_meta = dict(existing["metadatas"][0])
                 if existing_meta.get("content_hash") == content_hash:
-                    existing_meta["duplicate_count"] = (
-                        int(existing_meta.get("duplicate_count", 1)) + 1
-                    )
+                    existing_meta["duplicate_count"] = int(existing_meta.get("duplicate_count", 1)) + 1
                     existing_meta["last_seen_at"] = now.isoformat()
                     self.vector_store.update(ids=[document_id], metadatas=[existing_meta])
                     logger.debug("memory_save topic-duplicate id=%s", document_id)
@@ -117,9 +115,7 @@ class MemoryService:
                     status = "updated"
                     revision_count = int(existing_meta.get("revision_count", 1)) + 1
                     original_timestamp = str(existing_meta.get("timestamp", now.isoformat()))
-                    original_last_accessed = str(
-                        existing_meta.get("last_accessed_at", now.isoformat())
-                    )
+                    original_last_accessed = str(existing_meta.get("last_accessed_at", now.isoformat()))
 
         if status == "created":
             duplicate = self.vector_store.get(
@@ -192,9 +188,7 @@ class MemoryService:
         metadata = result["metadatas"][0]
         if str(metadata.get("deleted_at", "")):
             raise KeyError(id)
-        return _to_dict(
-            self._build_memory_entry(item_id=id, document=result["documents"][0], metadata=metadata)
-        )
+        return _to_dict(self._build_memory_entry(item_id=id, document=result["documents"][0], metadata=metadata))
 
     def memory_search(
         self,
@@ -234,9 +228,7 @@ class MemoryService:
         distances = result.get("distances", [[]])[0]
 
         items: list[SearchResult] = []
-        for item_id, document, metadata, distance in zip(
-            ids, documents, metadatas, distances, strict=False
-        ):
+        for item_id, document, metadata, distance in zip(ids, documents, metadatas, distances, strict=False):
             entry = self._build_memory_entry(item_id=item_id, document=document, metadata=metadata)
             content_out = document[:200] if snippet_only and len(document) > 200 else document
             items.append(
@@ -254,9 +246,7 @@ class MemoryService:
 
         logger.debug("memory_search query=%r limit=%d results=%d", query[:60], limit, len(items))
         self._searches_since_write += 1
-        nudge = (
-            _SEARCH_NUDGE_MESSAGE if self._searches_since_write > _SEARCH_NUDGE_THRESHOLD else None
-        )
+        nudge = _SEARCH_NUDGE_MESSAGE if self._searches_since_write > _SEARCH_NUDGE_THRESHOLD else None
         return _to_dict(SearchResponse(results=items, nudge=nudge))
 
     def memory_recall(self, topic_key: str) -> dict:
@@ -267,9 +257,7 @@ class MemoryService:
 
     def memory_session_summary(self, *, summary: str, agent_source: str | None = None) -> dict:
         self._reset_search_nudge()
-        return _to_dict(
-            self.session_manager.save_summary(summary=summary, agent_source=agent_source)
-        )
+        return _to_dict(self.session_manager.save_summary(summary=summary, agent_source=agent_source))
 
     def memory_session_start(self, *, agent_source: str | None = None) -> dict:
         return _to_dict(self.session_manager.start_session(agent_source=agent_source))
@@ -460,9 +448,7 @@ class MemoryService:
 
         candidates = [
             (item_id, doc, meta)
-            for item_id, doc, meta in zip(
-                result["ids"], result["documents"], result["metadatas"], strict=False
-            )
+            for item_id, doc, meta in zip(result["ids"], result["documents"], result["metadatas"], strict=False)
             if item_id != exclude_id
         ]
         if not candidates:

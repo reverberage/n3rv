@@ -34,6 +34,4 @@ class TemplateEngine:
         except TemplateNotFound as exc:
             raise TemplateRenderError(f"Template not found: {template_name}") from exc
         except UndefinedError as exc:
-            raise TemplateRenderError(
-                f"Undefined variable in template {template_name}: {exc}"
-            ) from exc
+            raise TemplateRenderError(f"Undefined variable in template {template_name}: {exc}") from exc

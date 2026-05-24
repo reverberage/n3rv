@@ -70,9 +70,7 @@ class TaskRouter:
         context: list[dict] = []
         if self.memory_service:
             try:
-                search_response = self.memory_service.memory_search(
-                    query=description[:1000], limit=5
-                )
+                search_response = self.memory_service.memory_search(query=description[:1000], limit=5)
                 context = search_response.get("results", [])
             except Exception:
                 logger.warning(

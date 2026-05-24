@@ -38,9 +38,7 @@ def result_payload(
     if isinstance(value, BaseModel):
         return value.model_dump(mode="json")
     if isinstance(value, list):
-        return [
-            item.model_dump(mode="json") if isinstance(item, BaseModel) else item for item in value
-        ]
+        return [item.model_dump(mode="json") if isinstance(item, BaseModel) else item for item in value]
     return value
 
 

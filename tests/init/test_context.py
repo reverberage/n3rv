@@ -20,9 +20,7 @@ def test_stack_enum_values():
 
 def test_project_context_build():
     """Test ProjectContext.build() creates valid context with auto-populated fields."""
-    ctx = ProjectContext.build(
-        project_name="myapp", stack=Stack.PYTHON, project_root=Path("/tmp/myapp")
-    )
+    ctx = ProjectContext.build(project_name="myapp", stack=Stack.PYTHON, project_root=Path("/tmp/myapp"))
 
     assert ctx.project_name == "myapp"
     assert ctx.stack == Stack.PYTHON

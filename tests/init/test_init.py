@@ -212,8 +212,7 @@ class TestUpdate:
         agents_md = tmp_path / "AGENTS.md"
         # Add custom user content after markers
         agents_md.write_text(
-            agents_md.read_text(encoding="utf-8")
-            + "\n\n// My custom project notes\n// Team conventions here\n",
+            agents_md.read_text(encoding="utf-8") + "\n\n// My custom project notes\n// Team conventions here\n",
             encoding="utf-8",
         )
 

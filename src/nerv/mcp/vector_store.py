@@ -182,9 +182,7 @@ class VectorStore:
         ids_to_update: list[str] = []
         metadatas_to_update: list[dict] = []
 
-        for item_id, document, metadata in zip(
-            result["ids"], result["documents"], result["metadatas"], strict=False
-        ):
+        for item_id, document, metadata in zip(result["ids"], result["documents"], result["metadatas"], strict=False):
             updated_metadata = dict(metadata)
             changed = False
 
