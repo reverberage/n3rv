@@ -1,4 +1,4 @@
-"""Update orchestrator for nerv update command."""
+"""Update orchestrator for n3rv update command."""
 
 from __future__ import annotations
 
@@ -84,9 +84,9 @@ FILE_UPDATE_MANIFEST: list[UpdateEntry] = [
         "AGENTS.md",
         UpdateStrategy.MARKER_MERGE,
     ),
-    UpdateEntry("nerv/a2a-config.yaml.j2", ".n3rv/a2a-config.yaml", UpdateStrategy.OVERWRITE),
+    UpdateEntry("n3rv/a2a-config.yaml.j2", ".n3rv/a2a-config.yaml", UpdateStrategy.OVERWRITE),
     UpdateEntry(
-        "nerv/systemd/n3rv-hub.service.j2",
+        "n3rv/systemd/n3rv-hub.service.j2",
         ".n3rv/systemd/n3rv-hub.service",
         UpdateStrategy.OVERWRITE,
     ),
@@ -237,10 +237,10 @@ FILE_UPDATE_MANIFEST: list[UpdateEntry] = [
         ".opencode/skills/github-ops/SKILL.md",
         UpdateStrategy.SKIP_DEFAULT,
     ),
-    # NERV primary agent
+    # N3RV primary agent
     UpdateEntry(
-        "opencode/agents/nerv.md.j2",
-        ".opencode/agents/nerv.md",
+        "opencode/agents/n3rv.md.j2",
+        ".opencode/agents/n3rv.md",
         UpdateStrategy.SKIP_DEFAULT,
     ),
 ]
@@ -304,7 +304,7 @@ def run_update(
 
         n3rv_binary = shutil.which("n3rv")
         if not n3rv_binary:
-            print("✗ Error: nerv binary not found in PATH")
+            print("✗ Error: n3rv binary not found in PATH")
             return 1
 
         render_ctx = {**context.to_dict(), "n3rv_binary": n3rv_binary}

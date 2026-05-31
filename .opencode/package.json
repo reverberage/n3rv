@@ -1,6 +1,6 @@
 {
   "private": true,
-  "description": "NERV custom tools and plugins for OpenCode",
+  "description": "N3RV custom tools and plugins for OpenCode",
   "dependencies": {
     "@opencode-ai/plugin": "*"
   },

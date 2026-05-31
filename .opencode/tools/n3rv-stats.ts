@@ -1,7 +1,7 @@
 /**
- * NERV custom tools for OpenCode.
+ * N3RV custom tools for OpenCode.
  *
- * These tools communicate with NERV MCP servers via HTTP, bypassing the
+ * These tools communicate with N3RV MCP servers via HTTP, bypassing the
  * MCP subprocess round-trip for faster LLM tool calls.
  *
  * All tools have a 1s hard timeout and return structured JSON on failure.
@@ -12,7 +12,7 @@
 import { tool } from "@opencode-ai/plugin";
 
 // ──────────────────────────────────────────────
-// Internal: call nerv-memory MCP via HTTP POST
+// Internal: call n3rv-memory MCP via HTTP POST
 // ──────────────────────────────────────────────
 const MEMORY_MCP_URL = "http://127.0.0.1:19821";
 
@@ -51,7 +51,7 @@ async function memoryRpc(method: string, params: Record<string, unknown> = {}) {
 }
 
 // ──────────────────────────────────────────────
-// Internal: call nerv-hub MCP via HTTP POST
+// Internal: call n3rv-hub MCP via HTTP POST
 // ──────────────────────────────────────────────
 const HUB_MCP_URL = "http://127.0.0.1:19820";
 
@@ -93,8 +93,8 @@ async function hubRpc(method: string, params: Record<string, unknown> = {}) {
 // Tools
 // ──────────────────────────────────────────────
 
-export const nerv_memory_stats = tool({
-  description: "Return aggregate counts for active memories in NERV memory store.",
+export const n3rv_memory_stats = tool({
+  description: "Return aggregate counts for active memories in N3RV memory store.",
   args: {},
   async execute() {
     const result = await memoryRpc("memory_stats", {});
@@ -105,7 +105,7 @@ export const nerv_memory_stats = tool({
   },
 });
 
-export const nerv_task_status = tool({
+export const n3rv_task_status = tool({
   description: "Get the current state of an A2A hub task by its ID.",
   args: {
     task_id: tool.schema.string().describe("The task ID to look up"),
@@ -119,8 +119,8 @@ export const nerv_task_status = tool({
   },
 });
 
-export const nerv_hub_health = tool({
-  description: "Check whether the NERV A2A hub is reachable and healthy.",
+export const n3rv_hub_health = tool({
+  description: "Check whether the N3RV A2A hub is reachable and healthy.",
   args: {},
   async execute() {
     const controller = new AbortController();
@@ -143,17 +143,17 @@ export const nerv_hub_health = tool({
   },
 });
 
-export const nerv_check_pending_tasks = tool({
+export const n3rv_check_pending_tasks = tool({
   description:
-    "List all pending tasks assigned to an agent. Falls back to NERV_AGENT_SOURCE env var if agent_id omitted.",
+    "List all pending tasks assigned to an agent. Falls back to N3RV_AGENT_SOURCE env var if agent_id omitted.",
   args: {
     agent_id: tool.schema
       .string()
       .optional()
-      .describe("The agent ID to check. If omitted, uses NERV_AGENT_SOURCE from environment."),
+      .describe("The agent ID to check. If omitted, uses N3RV_AGENT_SOURCE from environment."),
   },
   async execute(args) {
-    const agentId = args.agent_id ?? process.env.NERV_AGENT_SOURCE ?? "unknown";
+    const agentId = args.agent_id ?? process.env.N3RV_AGENT_SOURCE ?? "unknown";
     const result = await hubRpc("list_pending_tasks", { agent_id: agentId });
     if (result.error) {
       return JSON.stringify({ error: "check_pending_tasks unavailable", detail: result.error });

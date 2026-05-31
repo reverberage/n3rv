@@ -18,7 +18,7 @@ from n3rv.init import run_init
 
 app = typer.Typer(name="n3rv", help="Invisible engineering infrastructure for opencode agents")
 hub_app = typer.Typer(help="A2A Hub commands")
-daemon_app = typer.Typer(help="Manage nerv hub daemon")
+daemon_app = typer.Typer(help="Manage n3rv hub daemon")
 app.add_typer(hub_app, name="hub")
 app.add_typer(daemon_app, name="daemon")
 app.add_typer(memory_app, name="memory")

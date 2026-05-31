@@ -17,9 +17,9 @@ from n3rv.init.writer import (
 )
 
 FILE_MANIFEST = [
-    ("nerv/a2a-config.yaml.j2", ".n3rv/a2a-config.yaml", False, False),
+    ("n3rv/a2a-config.yaml.j2", ".n3rv/a2a-config.yaml", False, False),
     (
-        "nerv/systemd/n3rv-hub.service.j2",
+        "n3rv/systemd/n3rv-hub.service.j2",
         ".n3rv/systemd/n3rv-hub.service",
         False,
         False,
@@ -198,7 +198,7 @@ FILE_MANIFEST = [
         False,
     ),
     # NERV primary agent (user-facing entry point)
-    ("opencode/agents/nerv.md.j2", ".opencode/agents/nerv.md", False, False),
+    ("opencode/agents/n3rv.md.j2", ".opencode/agents/n3rv.md", False, False),
 ]
 
 
@@ -325,8 +325,8 @@ def run_init(
             print(f"⚠ {error_count} errors occurred")
             return 1
 
-        print("NERV is configured. Work inside opencode.")
-        print("Next: Run 'nerv daemon install' to set up the hub as a background service.")
+        print("N3RV is configured. Work inside opencode.")
+        print("Next: Run 'n3rv daemon install' to set up the hub as a background service.")
         return 0
 
     except Exception as exc:

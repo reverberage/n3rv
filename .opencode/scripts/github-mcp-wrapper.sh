@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NERV GitHub MCP wrapper — auto-detects GitHub token from gh CLI or env vars.
+# N3RV GitHub MCP wrapper — auto-detects GitHub token from gh CLI or env vars.
 # Falls back in order: gh auth token → GITHUB_PERSONAL_ACCESS_TOKEN → GITHUB_TOKEN
 set -euo pipefail
 

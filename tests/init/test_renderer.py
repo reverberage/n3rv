@@ -73,7 +73,7 @@ def test_template_not_found_raises_error(templates_dir: Path):
 def test_context_with_project_context(templates_dir: Path):
     """Test rendering with ProjectContext-like dict."""
     (templates_dir / "full.txt.j2").write_text(
-        "Project: {{ project_name }}\nStack: {{ stack }}\nVersion: {{ nerv_version }}"
+        "Project: {{ project_name }}\nStack: {{ stack }}\nVersion: {{ n3rv_version }}"
     )
 
     engine = TemplateEngine(templates_dir)
@@ -82,7 +82,7 @@ def test_context_with_project_context(templates_dir: Path):
         {
             "project_name": "myapp",
             "stack": "python",
-            "nerv_version": "0.1.0",
+            "n3rv_version": "0.1.0",
         },
     )
 

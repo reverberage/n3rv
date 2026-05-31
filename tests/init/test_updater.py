@@ -48,11 +48,11 @@ def test_validate_markers_multiple_pairs_returns_warning():
 def test_deep_merge_preserves_user_only_keys():
     """Test merge preserves user keys not in overlay."""
     base = {"user_key": "user_value", "shared": "old"}
-    overlay = {"shared": "new", "nerv_key": "inv_value"}
+    overlay = {"shared": "new", "n3rv_key": "inv_value"}
     result = deep_merge_json(base, overlay)
     assert result["user_key"] == "user_value"
     assert result["shared"] == "new"
-    assert result["nerv_key"] == "inv_value"
+    assert result["n3rv_key"] == "inv_value"
 
 
 def test_deep_merge_recursive_nested_dicts():

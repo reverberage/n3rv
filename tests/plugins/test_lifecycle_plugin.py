@@ -54,7 +54,7 @@ class TestShellEnvPlugin:
         content = _plugin_path("shell-env").read_text(encoding="utf-8")
         assert "shell.env" in content
 
-    def test_preserves_existing_nerv_agent_source(self) -> None:
+    def test_preserves_existing_n3rv_agent_source(self) -> None:
         content = _plugin_path("shell-env").read_text(encoding="utf-8")
         assert "N3RV_AGENT_SOURCE" in content
         # Should check for existing value before overwriting

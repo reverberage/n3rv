@@ -26,7 +26,7 @@ class ProjectContext(BaseModel):
     project_name: str
     stack: Stack
     project_root: Path
-    nerv_version: str
+    n3rv_version: str
     timestamp: str
 
     @field_validator("project_name")
@@ -51,7 +51,7 @@ class ProjectContext(BaseModel):
             project_name=project_name,
             stack=stack,
             project_root=project_root,
-            nerv_version=nerv_version,
+            n3rv_version=nerv_version,
             timestamp=timestamp,
         )
 
@@ -60,6 +60,6 @@ class ProjectContext(BaseModel):
             "project_name": self.project_name,
             "stack": self.stack.value,
             "project_root": str(self.project_root),
-            "nerv_version": self.n3rv_version,
+            "n3rv_version": self.n3rv_version,
             "timestamp": self.timestamp,
         }

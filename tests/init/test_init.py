@@ -61,13 +61,13 @@ class TestInit:
         assert "some-lib" not in content.lower()  # unknown libs not listed
         assert "Project Structure" not in content  # no structure detected
 
-    def test_nerv_agent_created(self, tmp_path: Path) -> None:
+    def test_n3rv_agent_created(self, tmp_path: Path) -> None:
         _write_fastapi_pyproject(tmp_path)
         run_init(tmp_path, project_name=None, stack_override=None, force=True)
 
-        nerv_agent = tmp_path / ".opencode" / "agents" / "n3rv.md"
-        assert nerv_agent.exists()
-        agent_content = nerv_agent.read_text(encoding="utf-8")
+        n3rv_agent = tmp_path / ".opencode" / "agents" / "n3rv.md"
+        assert n3rv_agent.exists()
+        agent_content = n3rv_agent.read_text(encoding="utf-8")
         assert "mode: primary" in agent_content
         assert "hidden: false" in agent_content
         assert "sdd-explorer" in agent_content
@@ -157,9 +157,9 @@ class TestInit:
         assert package_json.is_file(), f"Missing {package_json}"
 
         ts_content = stats_ts.read_text(encoding="utf-8")
-        assert "nerv_memory_stats" in ts_content
-        assert "nerv_hub_health" in ts_content
-        assert "nerv_check_pending_tasks" in ts_content
+        assert "n3rv_memory_stats" in ts_content
+        assert "n3rv_hub_health" in ts_content
+        assert "n3rv_check_pending_tasks" in ts_content
 
         pkg_content = package_json.read_text(encoding="utf-8")
         assert "@opencode-ai/plugin" in pkg_content
@@ -234,14 +234,14 @@ class TestUpdate:
         # AGENTS.md should not have been modified during dry run
         assert agents_md_before == agents_md_after
 
-    def test_update_creates_missing_nerv_agent(self, tmp_path: Path) -> None:
+    def test_update_creates_missing_n3rv_agent(self, tmp_path: Path) -> None:
         _write_fastapi_pyproject(tmp_path)
         run_init(tmp_path, project_name=None, stack_override=None, force=True)
 
-        nerv_agent = tmp_path / ".opencode" / "agents" / "n3rv.md"
-        nerv_agent.unlink()
-        assert not nerv_agent.exists()
+        n3rv_agent = tmp_path / ".opencode" / "agents" / "n3rv.md"
+        n3rv_agent.unlink()
+        assert not n3rv_agent.exists()
 
         run_update(tmp_path, force_commands=True)
 
-        assert nerv_agent.exists()
+        assert n3rv_agent.exists()

@@ -41,7 +41,7 @@ def test_project_context_to_dict():
 
     assert result["project_name"] == "testproject"
     assert result["stack"] == "node"  # Stack enum converted to string
-    assert "nerv_version" in result
+    assert result["n3rv_version"] in ("dev", "0.1.0")
     assert "timestamp" in result
 
 
@@ -58,6 +58,6 @@ def test_stack_validation():
         ProjectContext(
             project_name="test",
             stack="invalid",  # type: ignore
-            nerv_version="0.1.0",
+            n3rv_version="0.1.0",
             timestamp="2025-01-15T00:00:00Z",
         )

@@ -51,7 +51,7 @@ def test_init_creates_systemd_unit(tmp_path: Path):
     unit_path = tmp_path / ".n3rv" / "systemd" / "n3rv-hub.service"
     assert unit_path.exists()
     content = unit_path.read_text()
-    assert "NERV A2A Hub for" in content
+    assert "N3RV A2A Hub for" in content
     n3rv_binary = shutil.which("n3rv")
     assert n3rv_binary is not None, "n3rv binary not found in PATH"
     assert f"ExecStart={n3rv_binary} hub start" in content

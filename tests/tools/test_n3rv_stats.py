@@ -7,7 +7,7 @@ def _tools_path() -> Path:
     return Path(__file__).resolve().parents[2] / ".opencode" / "tools" / "n3rv-stats.ts"
 
 
-class TestNervStatsTools:
+class TestN3rvStatsTools:
     def test_file_exists(self) -> None:
         assert _tools_path().is_file()
 
@@ -17,19 +17,19 @@ class TestNervStatsTools:
 
     def test_exports_memory_stats(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "export const nerv_memory_stats" in content
+        assert "export const n3rv_memory_stats" in content
 
     def test_exports_task_status(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "export const nerv_task_status" in content
+        assert "export const n3rv_task_status" in content
 
     def test_exports_hub_health(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "export const nerv_hub_health" in content
+        assert "export const n3rv_hub_health" in content
 
     def test_exports_check_pending_tasks(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "export const nerv_check_pending_tasks" in content
+        assert "export const n3rv_check_pending_tasks" in content
 
     def test_hub_health_returns_false_on_failure(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
