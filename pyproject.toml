@@ -2,7 +2,22 @@
 name = "n3rv"
 version = "0.1.0"
 description = "Invisible engineering infrastructure for opencode agents."
+readme = "README.md"
+license = { text = "GPL-2.0" }
+authors = [{ name = "Juan Manuel Daza", email = "juanmanueldaza@gmail.com" }]
 requires-python = ">=3.14"
+keywords = ["opencode", "agent", "infrastructure", "mcp", "memory", "hub"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "aiohttp>=3.13.5",
     "chromadb>=1.5.9",
