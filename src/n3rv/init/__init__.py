@@ -13,6 +13,7 @@ from n3rv.init.renderer import TemplateEngine
 from n3rv.init.writer import (
     WriteResult,
     configure_git_hooks,
+    configure_gitignore,
     write_file,
 )
 
@@ -362,6 +363,11 @@ def run_init(
             print("✓ Configured git hooks")
         else:
             print("⚠ Warning: No .git directory found, skipping git hooks config")
+
+        if configure_gitignore(root):
+            print("✓ Added .n3rv/ to .gitignore")
+        else:
+            pass  # already present or no git repo
 
         try:
             registry_path = write_registry(root)

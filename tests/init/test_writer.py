@@ -11,6 +11,7 @@ from n3rv.init.writer import (
     MARKER_START,
     WriteResult,
     configure_git_hooks,
+    configure_gitignore,
     write_file,
 )
 
@@ -165,4 +166,48 @@ def test_configure_git_hooks_with_git_repo(tmp_path: Path):
 def test_configure_git_hooks_without_git_repo(tmp_path: Path):
     """Test git hooks configuration without .git directory returns False."""
     result = configure_git_hooks(tmp_path)
+    assert result is False
+
+
+def test_configure_gitignore_adds_entry_to_new_gitignore(tmp_path: Path):
+    """Test .n3rv/ is appended when .gitignore doesn't exist."""
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+
+    result = configure_gitignore(tmp_path)
+
+    assert result is True
+    gitignore = tmp_path / ".gitignore"
+    assert gitignore.exists()
+    assert ".n3rv/" in gitignore.read_text()
+
+
+def test_configure_gitignore_skips_if_already_present(tmp_path: Path):
+    """Test idempotence when .n3rv/ is already in .gitignore."""
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    gitignore = tmp_path / ".gitignore"
+    gitignore.write_text("existing stuff\n.n3rv/\n")
+
+    result = configure_gitignore(tmp_path)
+
+    assert result is False
+    assert gitignore.read_text() == "existing stuff\n.n3rv/\n"
+
+
+def test_configure_gitignore_appends_to_existing_without_entry(tmp_path: Path):
+    """Test .n3rv/ is appended to existing .gitignore that lacks it."""
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    gitignore = tmp_path / ".gitignore"
+    gitignore.write_text("__pycache__/\n*.pyc\n")
+
+    result = configure_gitignore(tmp_path)
+
+    assert result is True
+    content = gitignore.read_text()
+    assert ".n3rv/" in content
+    assert "__pycache__/" in content  # original preserved
+
+
+def test_configure_gitignore_without_git_repo(tmp_path: Path):
+    """Test returns False when no .git directory exists."""
+    result = configure_gitignore(tmp_path)
     assert result is False

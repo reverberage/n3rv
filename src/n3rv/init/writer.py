@@ -116,6 +116,36 @@ def configure_git_hooks(root: Path) -> bool:
     return True
 
 
+def configure_gitignore(root: Path) -> bool:
+    """Ensure .n3rv/ is in .gitignore.
+
+    Args:
+        root: Project root directory
+
+    Returns:
+        True if .gitignore was updated, False if skipped or no git repo
+    """
+    git_dir = root / ".git"
+    if not git_dir.is_dir():
+        return False
+
+    gitignore = root / ".gitignore"
+    marker = ".n3rv/"
+
+    if gitignore.exists():
+        content = gitignore.read_text(encoding="utf-8")
+        # Already present
+        if marker in content:
+            return False
+
+    # Append entry
+    entry = f"\n{marker}\n"
+    with gitignore.open("a", encoding="utf-8") as fh:
+        fh.write(entry)
+
+    return True
+
+
 def validate_markers(content: str) -> list[str]:
     """Check if content has valid marker pairs.
 
