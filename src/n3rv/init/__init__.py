@@ -16,6 +16,51 @@ from n3rv.init.writer import (
     write_file,
 )
 
+NERV_DIR = Path(".nerv")
+
+
+def _check_nerv_migration(root: Path) -> bool:
+    """Detect old .nerv/ directory and prompt user for migration."""
+    nerv_path = root / NERV_DIR
+    if not nerv_path.exists():
+        return True
+
+    print()
+    print("!" * 58)
+    print("!!  WARNING: Old nerv project detected               !!")
+    print("!" * 58)
+    print(f"!!  Found {NERV_DIR}/ - created by the old nerv CLI    !!")
+    print("!!  (now renamed to n3rv).                           !!")
+    print("!" * 58)
+    print()
+    print("n3rv can delete the old .nerv/ files and")
+    print("initialize fresh n3rv-generated files.")
+    print()
+    print("  [1] Migrate - delete .nerv/ and init fresh")
+    print("  [2] Keep - abort, keep using nerv")
+    print()
+
+    while True:
+        try:
+            choice = input("Choose [1/2]: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return False
+        if choice == "1":
+            print()
+            shutil.rmtree(nerv_path, ignore_errors=True)
+            if nerv_path.exists():
+                print(f"! Could not fully remove {NERV_DIR}/ - some files may remain.")
+            else:
+                print(f"Removed {NERV_DIR}/.")
+            print()
+            return True
+        elif choice == "2":
+            print()
+            print("Aborting. Keeping existing nerv setup.")
+            return False
+        print("Please enter 1 or 2.")
+
 FILE_MANIFEST = [
     ("n3rv/a2a-config.yaml.j2", ".n3rv/a2a-config.yaml", False, False),
     (
@@ -209,6 +254,9 @@ def run_init(
     force: bool,
 ) -> int:
     try:
+        if not _check_nerv_migration(root) and not force:
+            return 0
+
         stack_info = detect_stack(root, stack_override=stack_override)
         final_project_name = project_name or stack_info.project_name
 

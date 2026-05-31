@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+from n3rv.init import NERV_DIR
 from n3rv.init.analyzer import analyze_project
 from n3rv.init.context import ProjectContext
 from n3rv.init.detector import detect_stack
@@ -285,6 +286,51 @@ def _select_manifest_entries(only: str | None) -> list[UpdateEntry]:
     return [entry for entry in FILE_UPDATE_MANIFEST if entry.strategy == strategy]
 
 
+def _check_nerv_migration_update(root: Path) -> bool:
+    """Detect old .nerv/ directory and prompt user for migration."""
+    import shutil
+
+    nerv_path = root / NERV_DIR
+    if not nerv_path.exists():
+        return True
+
+    print()
+    print("!" * 58)
+    print("!!  WARNING: Old nerv project detected               !!")
+    print("!" * 58)
+    print(f"!!  Found {NERV_DIR}/ - created by the old nerv CLI    !!")
+    print("!!  (now renamed to n3rv).                           !!")
+    print("!" * 58)
+    print()
+    print("n3rv can delete the old .nerv/ files and")
+    print("initialize fresh n3rv-generated files.")
+    print()
+    print("  [1] Migrate - delete .nerv/ and init fresh")
+    print("  [2] Keep - abort, keep using nerv")
+    print()
+
+    while True:
+        try:
+            choice = input("Choose [1/2]: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return False
+        if choice == "1":
+            print()
+            shutil.rmtree(nerv_path, ignore_errors=True)
+            if nerv_path.exists():
+                print(f"! Could not fully remove {NERV_DIR}/ - some files may remain.")
+            else:
+                print(f"Removed {NERV_DIR}/.")
+            print()
+            return True
+        elif choice == "2":
+            print()
+            print("Aborting. Keeping existing nerv setup.")
+            return False
+        print("Please enter 1 or 2.")
+
+
 def run_update(
     root: Path,
     dry_run: bool = False,
@@ -292,6 +338,9 @@ def run_update(
     only: str | None = None,
 ) -> int:
     try:
+        if not _check_nerv_migration_update(root):
+            return 0
+
         stack_info = detect_stack(root, stack_override=None)
         context = ProjectContext.build(
             project_name=stack_info.project_name,
