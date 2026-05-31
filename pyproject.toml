@@ -1,5 +1,5 @@
 [project]
-name = "nerv"
+name = "n3rv"
 version = "0.1.0"
 description = "Invisible engineering infrastructure for opencode agents."
 requires-python = ">=3.14"
@@ -18,15 +18,15 @@ dependencies = [
 ]
 
 [project.scripts]
-nerv = "nerv.cli:main"
-nerv-memory = "nerv.mcp.memory_server:main"
-nerv-hub = "nerv.mcp.hub_server:main"
+n3rv = "n3rv.cli:main"
+n3rv-memory = "n3rv.mcp.memory_server:main"
+n3rv-hub = "n3rv.mcp.hub_server:main"
 
 [project.urls]
-Homepage = "https://nerv.daza.ar"
-Repository = "https://github.com/juanmanueldaza/nerv"
-"Bug Tracker" = "https://github.com/juanmanueldaza/nerv/issues"
-"Changelog" = "https://github.com/juanmanueldaza/nerv/releases"
+Homepage = "https://n3rv.daza.ar"
+Repository = "https://github.com/juanmanueldaza/n3rv"
+"Bug Tracker" = "https://github.com/juanmanueldaza/n3rv/issues"
+"Changelog" = "https://github.com/juanmanueldaza/n3rv/releases"
 
 [build-system]
 requires = ["uv_build>=0.8.11,<0.9.0"]
