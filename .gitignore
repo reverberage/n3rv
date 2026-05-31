@@ -1,4 +1,4 @@
-.nerv/
+.n3rv/
 *.pyc
 __pycache__/
 .venv/
