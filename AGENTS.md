@@ -1,5 +1,5 @@
 # >>> NERV-MARKER-START
-# AGENTS.md — Coding Standards for nerv
+# AGENTS.md — Coding Standards for n3rv
 
 ## Project Stack
 
@@ -13,9 +13,9 @@
 
 ### Entry Points
 
-- `nerv`
-- `nerv-hub`
-- `nerv-memory`
+- `n3rv`
+- `n3rv-hub`
+- `n3rv-memory`
 
 
 

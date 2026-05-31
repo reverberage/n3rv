@@ -6,19 +6,19 @@ NERV provides invisible engineering infrastructure for AI agents through three i
 
 | Command | Purpose | Entry Function |
 |---------|----------|----------------|
-| `nerv` | CLI for init, update, hub start, memory commands | `src/nerv/cli.py:main()` |
-| `nerv-memory` | MCP server exposing memory tools | `src/nerv/mcp/memory_server.py:main()` |
-| `nerv-hub` | MCP server exposing hub delegation tools | `src/nerv/mcp/hub_server.py:main()` |
+| `n3rv` | CLI for init, update, hub start, memory commands | `src/n3rv/cli.py:main()` |
+| `n3rv-memory` | MCP server exposing memory tools | `src/n3rv/mcp/memory_server.py:main()` |
+| `n3rv-hub` | MCP server exposing hub delegation tools | `src/n3rv/mcp/hub_server.py:main()` |
 
 ## Evangelion Concept Map
 
-The nerv project draws its name and thematic structure from *Neon Genesis Evangelion*. Every subsystem maps to an Evangelion concept. Understanding these mappings reveals the design philosophy:
+The n3rv project draws its name and thematic structure from *Neon Genesis Evangelion*. Every subsystem maps to an Evangelion concept. Understanding these mappings reveals the design philosophy:
 
 | Evangelion Concept | NERV Subsystem | Why |
 |---|---|---|
 | **MAGI Supercomputer** | Memory Service | Three independent minds (ChromaDB, SQLite, SessionManager) reach consensus — just as Melchior, Balthasar, Casper vote on NERV's decisions |
 | **EVA Units** | AI Agents | Purpose-built entities dispatched from the Command Center (A2A Hub) to execute missions (tasks) |
-| **Geofront** | `.nerv/` directory | Hidden infrastructure beneath the workspace — houses memory stores, hub state, and configuration |
+| **Geofront** | `.n3rv/` directory | Hidden infrastructure beneath the workspace — houses memory stores, hub state, and configuration |
 | **Command Center** | A2A Hub + MCP Hub Server | Central dispatch. Routes tasks to agents by skill ID, monitors execution, collects results |
 | **Human Instrumentality Project** | SDD Workflow | The 8-phase grand protocol for achieving unity between human intent and machine output |
 | **SEELE** | SDD Verify / Judgment Day | The oversight council that reviews outputs, passes verdicts, and ensures quality |
@@ -37,7 +37,7 @@ For the full concept map including LCL (knowledge layer), Entry Plug (context), 
                │ MCP tools            │ MCP tools
                ▼                      ▼
 ┌──────────────────────┐  ┌──────────────────────────────────┐
-│   nerv-memory MCP    │  │     nerv-hub MCP                 │
+│   n3rv-memory MCP    │  │     n3rv-hub MCP                 │
 │   (memory_server.py) │  │     (hub_server.py)              │
 │                      │  │                                  │
 │ Tools:               │  │ Tools:                           │
@@ -76,7 +76,7 @@ For the full concept map including LCL (knowledge layer), Entry Plug (context), 
                                      ▼
                           ┌──────────────────────────────────┐
                           │  Registered Agents               │
-                          │  (from .nerv/a2a-config.yaml)    │
+                          │  (from .n3rv/a2a-config.yaml)    │
                           │                                  │
                           │  • opencode (general)             │
                           │  • sdd-* agents (specialized)    │
@@ -84,23 +84,23 @@ For the full concept map including LCL (knowledge layer), Entry Plug (context), 
                           └──────────────────────────────────┘
 ```
 
-## CLI (`src/nerv/cli.py`)
+## CLI (`src/n3rv/cli.py`)
 
 Typer-based CLI with three subcommands:
 
-- **`nerv init`** — Scaffolds target project with agent-native files using Jinja2 templates from `src/nerv/init/templates/`. Detects stack (python/node/go/generic) via `detector.py`.
-- **`nerv update`** — Updates existing scaffolded files. Supports `--dry-run`, `--force-commands`, `--only` flags.
-- **`nerv hub start`** — Launches the A2A hub server.
-- **`nerv memory *`** — Direct memory inspection (list, search, prune, stats). Delegates to `cli_memory.py`.
+- **`n3rv init`** — Scaffolds target project with agent-native files using Jinja2 templates from `src/n3rv/init/templates/`. Detects stack (python/node/go/generic) via `detector.py`.
+- **`n3rv update`** — Updates existing scaffolded files. Supports `--dry-run`, `--force-commands`, `--only` flags.
+- **`n3rv hub start`** — Launches the A2A hub server.
+- **`n3rv memory *`** — Direct memory inspection (list, search, prune, stats). Delegates to `cli_memory.py`.
 
 Key files:
-- `src/nerv/cli.py` — CLI entry point
-- `src/nerv/init/__init__.py` — Init orchestration
-- `src/nerv/init/detector.py` — Stack detection
-- `src/nerv/init/renderer.py` — Jinja2 template rendering
-- `src/nerv/init/registry.py` — SkillRegistry (scans SKILL.md files)
+- `src/n3rv/cli.py` — CLI entry point
+- `src/n3rv/init/__init__.py` — Init orchestration
+- `src/n3rv/init/detector.py` — Stack detection
+- `src/n3rv/init/renderer.py` — Jinja2 template rendering
+- `src/n3rv/init/registry.py` — SkillRegistry (scans SKILL.md files)
 
-## A2A Hub (`src/nerv/a2a/hub.py`)
+## A2A Hub (`src/n3rv/a2a/hub.py`)
 
 aiohttp web server providing JSON-RPC 2.0 interface for task delegation.
 
@@ -127,17 +127,17 @@ SUBMITTED → WORKING → COMPLETED
 On startup, `A2AHub._recover_tasks()` reroutes `SUBMITTED` tasks and marks `WORKING` tasks as `RESTART_RECOVERY` (since their state is unknown).
 
 Key files:
-- `src/nerv/a2a/hub.py` — A2AHub class, RPC handler
-- `src/nerv/a2a/router.py` — TaskRouter (routes to agents by skill ID)
-- `src/nerv/a2a/state.py` — HubStateStore (file-based JSON persistence)
-- `src/nerv/a2a/agent_cards.py` — Loads agent cards from `.nerv/a2a-config.yaml`
+- `src/n3rv/a2a/hub.py` — A2AHub class, RPC handler
+- `src/n3rv/a2a/router.py` — TaskRouter (routes to agents by skill ID)
+- `src/n3rv/a2a/state.py` — HubStateStore (file-based JSON persistence)
+- `src/n3rv/a2a/agent_cards.py` — Loads agent cards from `.n3rv/a2a-config.yaml`
 
-## Memory System (`src/nerv/mcp/memory_store.py`)
+## Memory System (`src/n3rv/mcp/memory_store.py`)
 
 Dual-store architecture:
 
-- **ChromaDB** (`.nerv/memory/chroma/`) — Vector storage for semantic search. Uses ONNXRuntime embeddings or hash fallback.
-- **SQLite** (`.nerv/memory/relations.db`) — Relations between memories (judgments, revisions).
+- **ChromaDB** (`.n3rv/memory/chroma/`) — Vector storage for semantic search. Uses ONNXRuntime embeddings or hash fallback.
+- **SQLite** (`.n3rv/memory/relations.db`) — Relations between memories (judgments, revisions).
 
 **Memory Types** (`models/memory.py:MemoryType`):
 
@@ -169,7 +169,7 @@ Dual-store architecture:
 
 ## MCP Servers
 
-### Memory Server (`src/nerv/mcp/memory_server.py`)
+### Memory Server (`src/n3rv/mcp/memory_server.py`)
 
 Exposes 12 tools to agents via FastMCP. Tools are available unless `NERV_MEMORY_PROFILE=safe`.
 
@@ -188,7 +188,7 @@ Exposes 12 tools to agents via FastMCP. Tools are available unless `NERV_MEMORY_
 | `memory_judge` | Record relationship verdict |
 | `memory_prune` | Soft-delete old memories |
 
-### Hub Server (`src/nerv/mcp/hub_server.py`)
+### Hub Server (`src/n3rv/mcp/hub_server.py`)
 
 Exposes 5 tools for task delegation via FastMCP.
 
@@ -202,7 +202,7 @@ Exposes 5 tools for task delegation via FastMCP.
 
 ## Agent Cards & Skill Registry
 
-Agent cards define capabilities in `.nerv/a2a-config.yaml` (created by `nerv init`):
+Agent cards define capabilities in `.n3rv/a2a-config.yaml` (created by `n3rv init`):
 
 ```yaml
 hub:
@@ -211,19 +211,19 @@ hub:
 project: <project-name>
 ```
 
-Skill registry (`src/nerv/init/registry.py`) scans `.opencode/skills/*/SKILL.md` files and extracts skill metadata (id, name, description, hub_skill_ids).
+Skill registry (`src/n3rv/init/registry.py`) scans `.opencode/skills/*/SKILL.md` files and extracts skill metadata (id, name, description, hub_skill_ids).
 
-TaskRouter (`src/nerv/a2a/router.py`) matches `skill_id` from delegation request to registered agents, with keyword-based fallback inference.
+TaskRouter (`src/n3rv/a2a/router.py`) matches `skill_id` from delegation request to registered agents, with keyword-based fallback inference.
 
 ## Data Flow Examples
 
 ### Initializing a Project
 
 ```
-nerv init --stack python
+n3rv init --stack python
   → detector.py detects stack
   → renderer.py renders templates from init/templates/
-  → Creates: AGENTS.md, opencode.json, .opencode/skills/*, .opencode/commands/*, .opencode/agents/*, .nerv/a2a-config.yaml, .githooks/pre-push
+  → Creates: AGENTS.md, opencode.json, .opencode/skills/*, .opencode/commands/*, .opencode/agents/*, .n3rv/a2a-config.yaml, .githooks/pre-push
 ```
 
 ### Saving a Memory

@@ -2,9 +2,9 @@
 
 NERV exposes two MCP servers with a total of 17 tools for agent integration.
 
-## Memory Server (`nerv-memory`)
+## Memory Server (`n3rv-memory`)
 
-Exposed by `src/nerv/mcp/memory_server.py`. Provides persistent semantic memory backed by ChromaDB + SQLite.
+Exposed by `src/n3rv/mcp/memory_server.py`. Provides persistent semantic memory backed by ChromaDB + SQLite.
 
 ### `memory_save`
 
@@ -158,9 +158,9 @@ Returns: `PruneResult` with `pruned` count, `scope`, `older_than_days`.
 
 ---
 
-## Hub Server (`nerv-hub`)
+## Hub Server (`n3rv-hub`)
 
-Exposed by `src/nerv/mcp/hub_server.py`. Provides A2A task delegation via the local hub.
+Exposed by `src/n3rv/mcp/hub_server.py`. Provides A2A task delegation via the local hub.
 
 ### `delegate_task`
 
@@ -228,7 +228,7 @@ Returns: Task object with `id`, `status`, `assigned_agent`, `metadata`.
 
 ## Task States
 
-Defined in `src/nerv/models/a2a.py:TaskState`:
+Defined in `src/n3rv/models/a2a.py:TaskState`:
 
 | State | Value | Meaning |
 |-------|-------|---------|

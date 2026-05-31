@@ -13,19 +13,19 @@ NERV is a local-only tool that runs as part of your development workflow. It is 
 ### Install
 
 ```bash
-git clone https://github.com/your-org/nerv.git
-cd nerv
+git clone https://github.com/your-org/n3rv.git
+cd n3rv
 uv sync
 ```
 
-This installs NERV in a virtual environment managed by uv. Entry points `nerv`, `nerv-memory`, and `nerv-hub` are available.
+This installs NERV in a virtual environment managed by uv. Entry points `n3rv`, `n3rv-memory`, and `n3rv-hub` are available.
 
 ### Verify Installation
 
 ```bash
-nerv --help
-nerv-memory --help
-nerv-hub --help
+n3rv --help
+n3rv-memory --help
+n3rv-hub --help
 ```
 
 ## Using NERV in a Project
@@ -34,14 +34,14 @@ nerv-hub --help
 
 ```bash
 cd /path/to/your/project
-nerv init
+n3rv init
 ```
 
 This scaffolds:
 - `AGENTS.md` — Coding standards and agent instructions
-- `.nerv/a2a-config.yaml` — Hub configuration
+- `.n3rv/a2a-config.yaml` — Hub configuration
 - `opencode.json` — MCP server configuration with env vars for opencode
-- `.nerv/systemd/nerv-hub.service` — systemd user unit template
+- `.n3rv/systemd/n3rv-hub.service` — systemd user unit template
 - `.opencode/` — Agent skills, commands, and subagent definitions
 - `.githooks/pre-push` — Git hook for SDD verification
 
@@ -49,23 +49,23 @@ This scaffolds:
 
 **Daemon mode (recommended):**
 
-The daemon requires the systemd unit file created by `nerv init`. Run init first, then:
+The daemon requires the systemd unit file created by `n3rv init`. Run init first, then:
 
 ```bash
-nerv daemon install   # install systemd user service
-nerv daemon enable --now  # enable on login + start now (equivalent to enable + start)
-nerv daemon status    # check status
-nerv daemon logs      # tail hub log file
-nerv daemon stop      # stop the daemon
+n3rv daemon install   # install systemd user service
+n3rv daemon enable --now  # enable on login + start now (equivalent to enable + start)
+n3rv daemon status    # check status
+n3rv daemon logs      # tail hub log file
+n3rv daemon stop      # stop the daemon
 ```
 
 **Foreground mode (development):**
 
 ```bash
-nerv hub start
+n3rv hub start
 ```
 
-The hub binds to `127.0.0.1:19820` by default. Change in `.nerv/a2a-config.yaml`:
+The hub binds to `127.0.0.1:19820` by default. Change in `.n3rv/a2a-config.yaml`:
 
 ```yaml
 hub:
@@ -75,19 +75,19 @@ hub:
 
 ### 3. MCP Server Configuration
 
-`nerv init` generates an `opencode.json` with MCP servers and env vars pre-configured:
+`n3rv init` generates an `opencode.json` with MCP servers and env vars pre-configured:
 
 ```json
 {
   "mcp": {
-    "nerv-memory": {
+    "n3rv-memory": {
       "type": "local",
-      "command": ["uv", "run", "nerv-memory"],
+      "command": ["uv", "run", "n3rv-memory"],
       "env": {"NERV_AGENT_SOURCE": "opencode"}
     },
-    "nerv-hub": {
+    "n3rv-hub": {
       "type": "local",
-      "command": ["uv", "run", "nerv-hub"],
+      "command": ["uv", "run", "n3rv-hub"],
       "env": {"NERV_AGENT_SOURCE": "opencode"}
     }
   }
@@ -111,25 +111,25 @@ NERV enables multiple opencode agents across different projects to coordinate th
 
 ```
 Machine
-├── nerv hub daemon (systemd user service, localhost:19820)
+├── n3rv hub daemon (systemd user service, localhost:19820)
 │   ├── Routes tasks between agents by skill ID
 │   ├── SSE streaming at GET /rpc/stream?agent_id=<id>
-│   └── Task persistence in ~/.nerv/hub-state/
+│   └── Task persistence in ~/.n3rv/hub-state/
 │
 ├── Project A
-│   ├── opencode instance → nerv-memory (local ChromaDB)
-│   └── opencode instance → nerv-hub (RPC to daemon)
+│   ├── opencode instance → n3rv-memory (local ChromaDB)
+│   └── opencode instance → n3rv-hub (RPC to daemon)
 │
 ├── Project B
-│   ├── opencode instance → nerv-memory (local ChromaDB)
-│   └── opencode instance → nerv-hub (RPC to daemon)
+│   ├── opencode instance → n3rv-memory (local ChromaDB)
+│   └── opencode instance → n3rv-hub (RPC to daemon)
 │
 └── Project C ...
 ```
 
 - **One hub daemon per machine** — all agents share a single task router
-- **Per-project memory** — each project has its own ChromaDB in `.nerv/memory/`
-- **Per-project MCP servers** — opencode launches `nerv-memory` and `nerv-hub` as project-local processes
+- **Per-project memory** — each project has its own ChromaDB in `.n3rv/memory/`
+- **Per-project MCP servers** — opencode launches `n3rv-memory` and `n3rv-hub` as project-local processes
 
 ### Task Flow
 
@@ -159,7 +159,7 @@ opencode Go subscription ($10/mo, $60/mo cap) provides per-request limits that c
 ## Updating NERV
 
 ```bash
-cd /path/to/nerv
+cd /path/to/n3rv
 git pull
 uv sync
 # If installed globally, reinstall to pick up source changes:
@@ -170,7 +170,7 @@ To update scaffolding in existing projects:
 
 ```bash
 cd /path/to/your/project
-nerv update [--dry-run] [--force-commands] [--only <files>]
+n3rv update [--dry-run] [--force-commands] [--only <files>]
 ```
 
 The daemon systemd unit is refreshed on update. `opencode.json` is JSON-merged (adds env vars without clobbering custom config).
@@ -184,7 +184,7 @@ NERV's memory and hub components are local-only. Use the CLI for scaffolding:
   run: |
     curl -LsSf https://astral.sh/uv/install.sh | sh
     uv sync
-    nerv init --stack python --force
+    n3rv init --stack python --force
 ```
 
 ### Testing in CI
@@ -203,20 +203,20 @@ lsof -i :19820
 ss -tlnp | grep 19820
 ```
 
-Kill the process or change the port in `.nerv/a2a-config.yaml`.
+Kill the process or change the port in `.n3rv/a2a-config.yaml`.
 
 ### Daemon Not Starting
 
 ```bash
-nerv daemon status                    # check systemd status
-journalctl --user -u nerv-hub -f     # view systemd journal
-nerv daemon logs                      # tail hub log file (.nerv/logs/hub.log)
+n3rv daemon status                    # check systemd status
+journalctl --user -u n3rv-hub -f     # view systemd journal
+n3rv daemon logs                      # tail hub log file (.n3rv/logs/hub.log)
 ```
 
 ### ChromaDB Corruption
 
 ```bash
-rm -rf .nerv/memory/chroma/
+rm -rf .n3rv/memory/chroma/
 ```
 
 ### ONNXRuntime Unavailable
@@ -225,7 +225,7 @@ On Python 3.14 or Windows, ONNXRuntime may not have a compatible wheel. NERV fal
 
 ### Hub Connection Refused
 
-1. Verify hub daemon is running: `nerv daemon status`
+1. Verify hub daemon is running: `n3rv daemon status`
 2. Check direct connection: `curl http://127.0.0.1:19820/health`
 3. Verify `NERV_HUB_URL` matches your hub address
-4. Check `.nerv/a2a-config.yaml` for port conflicts
+4. Check `.n3rv/a2a-config.yaml` for port conflicts

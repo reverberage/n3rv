@@ -15,7 +15,7 @@
 █████████████████████████████████████████████████████████
 ```
 
-`nerv` is an open-source engineering harness designed to contain, restrain, and orchestrate Large Language Models (LLMs). Instead of treating agents as independent chatbots, NERV builds a rigid operational framework — handling tools, dual-store memory, and real-time project context injection. Integrates natively with opencode via MCP servers, agent skills, slash commands, and sub-agents.
+`n3rv` is an open-source engineering harness designed to contain, restrain, and orchestrate Large Language Models (LLMs). Instead of treating agents as independent chatbots, NERV builds a rigid operational framework — handling tools, dual-store memory, and real-time project context injection. Integrates natively with opencode via MCP servers, agent skills, slash commands, and sub-agents.
 
 [Architecture](docs/ARCHITECTURE.md) • [SDD Workflow](docs/SDD-WORKFLOW.md) • [MCP Tools](docs/MCP-TOOLS.md) • [Deployment](docs/DEPLOYMENT.md) • [Evangelion](EVANGELION.md) • [Security](SECURITY.md) • [Contributing](CONTRIBUTING.md)
 
@@ -29,7 +29,7 @@ The base model is the Angel: raw, uncontained, and unpredictable. NERV is the re
 *   **LCL Project Injection:** Automatic parsing of environment manifests (`pyproject.toml`, `package.json`). The agent "breathes" your project architecture from session one.
 *   **14 Synchronized Agent Skills (The EVAs):** Specialized skill files for distinct phases of the software development lifecycle — code, testing, commits, GitHub ops, git ops, SDD (explore → propose → spec → design → tasks → apply → verify → archive), judgment-day review.
 *   **10 Sub-Agents:** Dedicated agent configs for each SDD phase + git-ops + github-ops, isolated by responsibility.
-*   **MCP Protocol Integration:** 5 native MCP servers — nerv-memory (semantic + relational memory), nerv-hub (A2A task delegation), GitHub wrapper, Context7 contextual search, sequential-thinking.
+*   **MCP Protocol Integration:** 5 native MCP servers — n3rv-memory (semantic + relational memory), n3rv-hub (A2A task delegation), GitHub wrapper, Context7 contextual search, sequential-thinking.
 
 ---
 
@@ -38,18 +38,18 @@ The base model is the Angel: raw, uncontained, and unpredictable. NERV is the re
 Initialize the harness inside your local repository:
 
 ```bash
-uv tool install git+https://github.com/juanmanueldaza/nerv.git
+uv tool install git+https://github.com/juanmanueldaza/n3rv.git
 cd your-project
-nerv init
+n3rv init
 ```
 
 Or run without installing:
 
 ```bash
-uvx --from git+https://github.com/juanmanueldaza/nerv.git nerv init
+uvx --from git+https://github.com/juanmanueldaza/n3rv.git n3rv init
 ```
 
-`nerv init` provisions your workspace with:
+`n3rv init` provisions your workspace with:
 
 ```
 📂 Project root
@@ -63,7 +63,7 @@ uvx --from git+https://github.com/juanmanueldaza/nerv.git nerv init
 │   ├── 📂 commands/          # 4 slash commands (sdd-new, judgment-day, review, handoff)
 │   ├── 📂 plugins/           # lifecycle & shell-env plugins
 │   └── 📂 scripts/           # MCP wrapper scripts
-├── 📂 .nerv/
+├── 📂 .n3rv/
 │   ├── 📄 a2a-config.yaml    # Agent-to-Agent hub configuration
 │   ├── 📄 skill-registry.md  # Auto-generated skill index
 │   ├── 📂 memory/            # ChromaDB + SQLite (MAGI storage)
@@ -77,19 +77,19 @@ uvx --from git+https://github.com/juanmanueldaza/nerv.git nerv init
 ## 🛠️ Usage
 
 ```bash
-nerv init [--stack python|node|go|generic] [--force]
-nerv update [--dry-run] [--force-commands]
-nerv hub start                          # foreground A2A hub (development)
-nerv daemon install|start|stop|status|enable|logs   # background service
-nerv memory list|search|prune|stats     # MAGI memory operations
+n3rv init [--stack python|node|go|generic] [--force]
+n3rv update [--dry-run] [--force-commands]
+n3rv hub start                          # foreground A2A hub (development)
+n3rv daemon install|start|stop|status|enable|logs   # background service
+n3rv memory list|search|prune|stats     # MAGI memory operations
 ```
 
 ### MCP Servers (auto-configured in opencode.json)
 
 | Server | Purpose |
 |--------|---------|
-| `nerv-memory` | ChromaDB + SQLite dual-store memory |
-| `nerv-hub` | A2A task delegation (JSON-RPC 2.0) |
+| `n3rv-memory` | ChromaDB + SQLite dual-store memory |
+| `n3rv-hub` | A2A task delegation (JSON-RPC 2.0) |
 | `github` | GitHub API via MCP |
 | `context7` | Contextual search across codebase |
 | `sequential-thinking` | Chain-of-thought reasoning |
@@ -128,7 +128,7 @@ NERV is currently under active development, built in public. We are testing rest
 **Install from source after updates:**
 
 ```bash
-cd ~/Projects/nerv && git pull && uv tool install --reinstall .
+cd ~/Projects/n3rv && git pull && uv tool install --reinstall .
 ```
 
 ---

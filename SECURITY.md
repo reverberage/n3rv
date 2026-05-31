@@ -2,7 +2,7 @@
 
 ## Trust Model
 
-nerv assumes a **trusted local environment**. All services bind to `127.0.0.1` only.
+n3rv assumes a **trusted local environment**. All services bind to `127.0.0.1` only.
 
 ## Rules
 

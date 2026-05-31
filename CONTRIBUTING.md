@@ -1,10 +1,10 @@
-# Contributing to nerv
+# Contributing to n3rv
 
 ## NERV (AI Agent Infrastructure)
 
-You're already in the NERV repo. For other projects in this ecosystem, install NERV and run `nerv init` to set up the SDD workflow, A2A hub, and OpenCode integration.
+You're already in the NERV repo. For other projects in this ecosystem, install NERV and run `n3rv init` to set up the SDD workflow, A2A hub, and OpenCode integration.
 
-For this project itself, all NERV integration is already configured — see `.opencode/agents/nerv.md` for available commands, skills, and SDD agents.
+For this project itself, all NERV integration is already configured — see `.opencode/agents/n3rv.md` for available commands, skills, and SDD agents.
 
 ## Dev Setup
 

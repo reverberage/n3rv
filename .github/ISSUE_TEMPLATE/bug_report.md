@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug to help us improve nerv
+about: Report a bug to help us improve n3rv
 title: ""
 labels: bug
 assignees: ""
@@ -11,7 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Run `nerv ...`
+1. Run `n3rv ...`
 2. See error
 
 **Expected behavior**
@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 **Environment (please complete):**
 - OS: [e.g. Linux, macOS]
 - Python version: [e.g. 3.14]
-- nerv version: [e.g. 0.1.0]
+- n3rv version: [e.g. 0.1.0]
 - OpenCode version (if relevant):
 
 **Additional context**

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for nerv
+about: Suggest an idea for n3rv
 title: ""
 labels: enhancement
 assignees: ""
