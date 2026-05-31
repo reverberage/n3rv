@@ -43,7 +43,7 @@ def _check_nerv_migration(root: Path) -> bool:
     while True:
         try:
             choice = input("Choose [1/2]: ").strip()
-        except (EOFError, KeyboardInterrupt):
+        except EOFError, KeyboardInterrupt:
             print()
             return False
         if choice == "1":
@@ -60,6 +60,7 @@ def _check_nerv_migration(root: Path) -> bool:
             print("Aborting. Keeping existing nerv setup.")
             return False
         print("Please enter 1 or 2.")
+
 
 FILE_MANIFEST = [
     ("n3rv/a2a-config.yaml.j2", ".n3rv/a2a-config.yaml", False, False),

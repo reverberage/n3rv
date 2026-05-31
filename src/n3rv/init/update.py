@@ -312,7 +312,7 @@ def _check_nerv_migration_update(root: Path) -> bool:
     while True:
         try:
             choice = input("Choose [1/2]: ").strip()
-        except (EOFError, KeyboardInterrupt):
+        except EOFError, KeyboardInterrupt:
             print()
             return False
         if choice == "1":
