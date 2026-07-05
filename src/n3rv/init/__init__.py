@@ -180,6 +180,12 @@ FILE_MANIFEST = [
     ),
     ("opencode/commands/review.md.j2", ".opencode/commands/review.md", False, False),
     ("opencode/commands/handoff.md.j2", ".opencode/commands/handoff.md", False, False),
+    (
+        "opencode/commands/new-satellite.md.j2",
+        ".opencode/commands/new-satellite.md",
+        False,
+        False,
+    ),
     # SDD phase sub-agents
     (
         "opencode/agents/sdd-explorer.md.j2",
