@@ -1,0 +1,41 @@
+---
+description: Scaffold a new reverberage satellite package
+---
+
+# new-satellite
+
+Scaffold a new reverberage satellite package under `reverberage/<name>`.
+
+## Usage
+
+```
+/new-satellite <name> [--description <desc>] [--with-mcp]
+```
+
+## What it produces
+
+Creates `reverberage/<name>` on GitHub and a local clone with:
+
+```
+<name>/
+├── src/<name>/
+│   ├── __init__.py
+│   ├── cli.py          # Typer CLI entry point
+│   └── models.py       # Pydantic v2 models
+├── tests/
+│   ├── __init__.py
+│   └── test_cli.py
+├── pyproject.toml       # hatchling build, pip-installable
+├── README.md
+└── .gitignore
+```
+
+## Requirements
+
+- `gh` CLI authenticated with write access to `reverberage` org
+- Python >=3.11 available
+
+## Options
+
+- `--description` — Short description for pyproject.toml
+- `--with-mcp` — Include MCP server scaffold (`mcp.py`, FastMCP pattern)

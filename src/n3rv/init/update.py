@@ -171,6 +171,11 @@ FILE_UPDATE_MANIFEST: list[UpdateEntry] = [
         UpdateStrategy.SKIP_DEFAULT,
     ),
     UpdateEntry(
+        "opencode/commands/new-satellite.md.j2",
+        ".opencode/commands/new-satellite.md",
+        UpdateStrategy.CREATE_IF_MISSING,
+    ),
+    UpdateEntry(
         "opencode/commands/review.md.j2",
         ".opencode/commands/review.md",
         UpdateStrategy.SKIP_DEFAULT,

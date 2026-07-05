@@ -54,6 +54,7 @@ When working on this project:
 | Command | Purpose |
 |---------|---------|
 | `/sdd-new <change>` | Start full SDD workflow (explore → propose → spec → design → tasks → apply → verify → archive) |
+| `/new-satellite` | Scaffold a new reverberage satellite package |
 | `/judgment-day` | Dual-model adversarial review via A2A hub |
 | `/review` | Code review against AGENTS.md rules |
 | `/handoff` | Create agent handoff document |

@@ -15,10 +15,11 @@
 █████████████████████████████████████████████████████████
 ```
 
-![PyPI](https://img.shields.io/pypi/v/n3rv?style=flat-square)
-![PyPI Downloads](https://img.shields.io/pypi/dm/n3rv?style=flat-square)
-![License](https://img.shields.io/github/license/juanmanueldaza/n3rv?style=flat-square)
-![GitHub stars](https://img.shields.io/github/stars/juanmanueldaza/n3rv?style=flat-square)
+> **reverberage fork** — This is the [reverberage](https://github.com/reverberage) maintainer's fork of
+> [juanmanueldaza/n3rv](https://github.com/juanmanueldaza/n3rv). Upstream is GPL-2.0; this fork is Apache-2.0.
+> Primary changes: no uv dependency, hatchling build, Python>=3.11, reverberage satellite patterns.
+
+![License](https://img.shields.io/github/license/reverberage/n3rv?style=flat-square)
 
 `n3rv` is an open-source engineering harness designed to contain, restrain, and orchestrate Large Language Models (LLMs). Instead of treating agents as independent chatbots, N3RV builds a rigid operational framework — handling tools, dual-store memory, and real-time project context injection. Integrates natively with opencode via MCP servers, agent skills, slash commands, and sub-agents.
 
@@ -43,8 +44,8 @@ The base model is the Angel: raw, uncontained, and unpredictable. N3RV is the re
 Initialize the harness inside your local repository:
 
 ```bash
-pip install n3rv                          # from PyPI
-pip install git+https://github.com/juanmanueldaza/n3rv.git  # from source (latest)
+pip install n3rv                          # from PyPI (upstream)
+pip install git+https://github.com/reverberage/n3rv.git  # from fork (latest)
 cd your-project
 n3rv init
 ```
@@ -52,7 +53,7 @@ n3rv init
 Or install and run in one shot:
 
 ```bash
-pip install git+https://github.com/juanmanueldaza/n3rv.git && n3rv init
+pip install git+https://github.com/reverberage/n3rv.git && n3rv init
 ```
 
 `n3rv init` provisions your workspace with:
@@ -134,16 +135,17 @@ N3RV is currently under active development, built in public. We are testing rest
 **Install or update:**
 
 ```bash
-pip install --force-reinstall n3rv      # latest from PyPI
-# or from source:
-pip install --force-reinstall git+https://github.com/juanmanueldaza/n3rv.git
+pip install --force-reinstall n3rv      # latest from PyPI (upstream)
+# or from fork source:
+pip install --force-reinstall git+https://github.com/reverberage/n3rv.git
 ```
 
 ---
 
 ## 📄 License
 
-Distributed under the **GNU General Public License v2.0 (GPL-2.0)**. N3RV is copyleft software — keeping the armor open ensures the angels stay contained.
+Distributed under the **Apache License 2.0**. N3RV is permissive open-source software.  
+*Note: The upstream [juanmanueldaza/n3rv](https://github.com/juanmanueldaza/n3rv) is GPL-2.0 licensed.*
 
 ---
 
