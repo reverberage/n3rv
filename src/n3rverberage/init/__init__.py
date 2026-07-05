@@ -331,7 +331,8 @@ def run_init(
             return 1
 
         templates_dir = Path(__file__).parent / "templates"
-        engine = TemplateEngine(templates_dir)
+        user_overrides_dir = root / ".n3rverberage" / "template-overrides"
+        engine = TemplateEngine(templates_dir, user_overrides_dir=user_overrides_dir)
 
         profile = analyze_project(root, context)
         render_ctx = {

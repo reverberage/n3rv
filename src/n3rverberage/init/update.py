@@ -2,17 +2,25 @@
 
 from __future__ import annotations
 
+import difflib
 import json
 import shutil
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
+from typing import Any
 
 from n3rverberage.init import N3RV_DIR, NERV_DIR
 from n3rverberage.init.analyzer import analyze_project
 from n3rverberage.init.context import ProjectContext
 from n3rverberage.init.detector import detect_stack
 from n3rverberage.init.registry import write_registry
+from n3rverberage.init.lockfile import (
+    diff_lockfile,
+    record_entry,
+    save_lockfile,
+    update_lockfile_entry,
+)
 from n3rverberage.init.renderer import TemplateEngine
 from n3rverberage.init.writer import MARKER_END, MARKER_START, validate_markers, write_file
 
@@ -385,6 +393,7 @@ def _check_n3rv_migration_update(root: Path) -> bool:
 def run_update(
     root: Path,
     dry_run: bool = False,
+    show_diff: bool = False,
     force_commands: bool = False,
     only: str | None = None,
 ) -> int:
@@ -402,7 +411,8 @@ def run_update(
         )
 
         templates_dir = Path(__file__).parent / "templates"
-        engine = TemplateEngine(templates_dir)
+        user_overrides_dir = root / ".n3rverberage" / "template-overrides"
+        engine = TemplateEngine(templates_dir, user_overrides_dir=user_overrides_dir)
 
         n3rverberage_binary = shutil.which("n3rverberage")
         if not n3rverberage_binary:
@@ -425,10 +435,39 @@ def run_update(
             if (template_dir / tpl_name).exists():
                 entries.append(UpdateEntry(tpl_name, out_path, UpdateStrategy.CREATE_IF_MISSING))
 
+        # Drift detection — compare lockfile against current state
+        rendered: dict[str, Path] = {}
         for entry in entries:
+            if (root / entry.output_path).is_file():
+                rendered[entry.output_path] = root / entry.output_path
+        drift = diff_lockfile(root, rendered) if not dry_run else {}
+        if drift:
+            print()
+            print("── Drift detected (files modified since last n3rverberage update) ──")
+            for path, reason in sorted(drift.items()):
+                print(f"  ⚠ {path}: {reason}")
+
+        for entry in entries:
+            # Compute diff content before processing
+            old_content = ""
+            target_path = root / entry.output_path
+            if target_path.is_file():
+                old_content = target_path.read_text(encoding="utf-8")
+            new_content = engine.render(entry.template_name, render_ctx)
+
             result = _process_entry(entry, root, engine, render_ctx, dry_run, force_commands)
             summary.results.append(result)
             _print_result(result, dry_run)
+
+            if show_diff and old_content and result.result not in ("ERROR", "SKIPPED"):
+                _show_diff(entry.output_path, old_content, new_content)
+
+            # Record lockfile entry for successfully written files
+            if not dry_run and result.result not in ("ERROR", "SKIPPED"):
+                target = root / entry.output_path
+                if target.is_file():
+                    lock_entry = record_entry(target, entry.template_name)
+                    update_lockfile_entry(root, entry.output_path, lock_entry)
 
         _print_summary(summary, dry_run)
 
@@ -438,6 +477,16 @@ def run_update(
                 print(f"✓ Updated {registry_path.relative_to(root)}")
             except Exception as exc:
                 print(f"⚠ Skill registry not written: {exc}")
+
+            # Final lockfile save with all entries
+            full_rendered: dict[str, Path] = {}
+            for entry in entries:
+                if (root / entry.output_path).is_file():
+                    full_rendered[entry.output_path] = root / entry.output_path
+            lock_entries: dict[str, Any] = {}
+            for rel, abspath in full_rendered.items():
+                lock_entries[rel] = record_entry(abspath, "")
+            save_lockfile(root, lock_entries)
 
         return 1 if summary.error_count > 0 else 0
 
@@ -620,6 +669,23 @@ def _handle_create_if_missing(entry: UpdateEntry, target: Path, content: str, dr
         return UpdateResult(entry.output_path, entry.strategy, result.upper())
 
     return UpdateResult(entry.output_path, entry.strategy, "CREATED")
+
+
+def _show_diff(path: str, old_content: str, new_content: str) -> None:
+    """Print a unified diff between old and new content."""
+    diff_lines = list(
+        difflib.unified_diff(
+            old_content.splitlines(keepends=True),
+            new_content.splitlines(keepends=True),
+            fromfile=f"a/{path}",
+            tofile=f"b/{path}",
+        )
+    )
+    if diff_lines:
+        print(f"  Diff for {path}:")
+        for line in diff_lines:
+            prefix = line[:1] if line[:1] in ("+", "-", "@") else " "
+            print(f"    {prefix}{line.rstrip()}")
 
 
 def _print_result(result: UpdateResult, dry_run: bool):
