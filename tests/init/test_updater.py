@@ -6,7 +6,7 @@ and update strategies.
 
 from pathlib import Path
 
-from n3rv.init.update import (
+from n3rverberage.init.update import (
     FILE_UPDATE_MANIFEST,
     UpdateEntry,
     UpdateResult,
@@ -15,7 +15,7 @@ from n3rv.init.update import (
     _handle_create_if_missing,
     deep_merge_json,
 )
-from n3rv.init.writer import MARKER_END, MARKER_START, validate_markers
+from n3rverberage.init.writer import MARKER_END, MARKER_START, validate_markers
 
 
 def test_validate_markers_clean_content_returns_empty():

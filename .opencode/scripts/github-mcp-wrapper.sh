@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# N3RV GitHub MCP wrapper — auto-detects GitHub token from gh CLI or env vars.
+# N3RVERBERAGE GitHub MCP wrapper — auto-detects GitHub token from gh CLI or env vars.
 # Falls back in order: gh auth token → GITHUB_PERSONAL_ACCESS_TOKEN → GITHUB_TOKEN
 set -euo pipefail
 
@@ -19,7 +19,7 @@ if [[ -z "${TOKEN:-}" ]]; then
 fi
 
 if [[ -z "${TOKEN:-}" ]]; then
-    echo "[n3rv:github-mcp] No GitHub token found — run 'gh auth login' or set GITHUB_PERSONAL_ACCESS_TOKEN" >&2
+    echo "[n3rverberage:github-mcp] No GitHub token found — run 'gh auth login' or set GITHUB_PERSONAL_ACCESS_TOKEN" >&2
     exit 1
 fi
 

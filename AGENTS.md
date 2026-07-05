@@ -1,5 +1,5 @@
-# >>> N3RV-MARKER-START
-# AGENTS.md — Coding Standards for n3rv
+# >>> N3RVERBERAGE-MARKER-START
+# AGENTS.md — Coding Standards for n3rverberage
 
 ## Project Stack
 
@@ -13,9 +13,9 @@
 
 ### Entry Points
 
-- `n3rv`
-- `n3rv-hub`
-- `n3rv-memory`
+- `n3rverberage`
+- `n3rverberage-hub`
+- `n3rverberage-memory`
 
 
 
@@ -100,4 +100,4 @@ REJECT if:
 REQUIRE:
 - Descriptive variable and function names
 - Error messages that help debugging
-# >>> N3RV-MARKER-END
+# >>> N3RVERBERAGE-MARKER-END

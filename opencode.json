@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "n3rv",
+  "default_agent": "n3rverberage",
   "instructions": [
     "AGENTS.md",
     "CONTRIBUTING.md",
@@ -8,8 +8,8 @@
     "docs/*.md"
   ],
   "plugin": [
-    ".opencode/plugins/n3rv-lifecycle.js",
-    ".opencode/plugins/n3rv-shell-env.js"
+    ".opencode/plugins/n3rverberage-lifecycle.js",
+    ".opencode/plugins/n3rverberage-shell-env.js"
   ],
   "tools": {
     "websearch": true
@@ -19,15 +19,15 @@
     "plan": { "disable": true }
   },
   "mcp": {
-    "n3rv-memory": {
+    "n3rverberage-memory": {
       "type": "local",
-      "command": ["n3rv-memory"],
-      "environment": {"N3RV_AGENT_SOURCE": "opencode"}
+      "command": ["n3rverberage-memory"],
+      "environment": {"N3RVERBERAGE_AGENT_SOURCE": "opencode"}
     },
-    "n3rv-hub": {
+    "n3rverberage-hub": {
       "type": "local",
-      "command": ["n3rv-hub"],
-      "environment": {"N3RV_AGENT_SOURCE": "opencode"}
+      "command": ["n3rverberage-hub"],
+      "environment": {"N3RVERBERAGE_AGENT_SOURCE": "opencode"}
     },
     "github": {
       "type": "local",

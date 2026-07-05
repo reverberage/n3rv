@@ -1,10 +1,10 @@
-# Contributing to n3rv
+# Contributing to n3rverberage
 
-## N3RV (AI Agent Infrastructure)
+## N3RVERBERAGE (AI Agent Infrastructure)
 
-You're already in the N3RV repo. For other projects in this ecosystem, install N3RV and run `n3rv init` to set up the SDD workflow, A2A hub, and OpenCode integration.
+You're already in the N3RVERBERAGE repo. For other projects in this ecosystem, install N3RVERBERAGE and run `n3rverberage init` to set up the SDD workflow, A2A hub, and OpenCode integration.
 
-For this project itself, all N3RV integration is already configured — see `.opencode/agents/n3rv.md` for available commands, skills, and SDD agents.
+For this project itself, all N3RVERBERAGE integration is already configured — see `.opencode/agents/n3rverberage.md` for available commands, skills, and SDD agents.
 
 ## Dev Setup
 

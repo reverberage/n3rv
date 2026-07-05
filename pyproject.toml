@@ -1,5 +1,5 @@
 [project]
-name = "n3rv"
+name = "n3rverberage"
 version = "0.1.0"
 description = "Invisible engineering infrastructure for opencode agents — reverberage fork."
 readme = "README.md"
@@ -37,22 +37,22 @@ dependencies = [
 ]
 
 [project.scripts]
-n3rv = "n3rv.cli:main"
-n3rv-memory = "n3rv.mcp.memory_server:main"
-n3rv-hub = "n3rv.mcp.hub_server:main"
+n3rverberage = "n3rverberage.cli:main"
+n3rverberage-memory = "n3rverberage.mcp.memory_server:main"
+n3rverberage-hub = "n3rverberage.mcp.hub_server:main"
 
 [project.urls]
-Homepage = "https://github.com/reverberage/n3rv"
-Repository = "https://github.com/reverberage/n3rv"
-"Bug Tracker" = "https://github.com/reverberage/n3rv/issues"
-"Changelog" = "https://github.com/reverberage/n3rv/releases"
+Homepage = "https://github.com/reverberage/n3rverberage"
+Repository = "https://github.com/reverberage/n3rverberage"
+"Bug Tracker" = "https://github.com/reverberage/n3rverberage/issues"
+"Changelog" = "https://github.com/reverberage/n3rverberage/releases"
 
 [build-system]
 requires = ["hatchling>=1.18.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/n3rv"]
+packages = ["src/n3rverberage"]
 
 [tool.hatch.build.targets.sdist]
 include = ["/src"]
