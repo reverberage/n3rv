@@ -27,13 +27,15 @@ org_app = typer.Typer(
 
 @org_app.command("init")
 def org_init(
-    root: Path = typer.Option(Path.cwd(), "--root", help="Org root directory"),
+    root: Path | None = typer.Option(None, "--root", help="Org root directory (default: CWD)"),
     org_name: str = typer.Option("reverberage", "--org-name", help="GitHub org name"),
     force: bool = typer.Option(False, "--force", help="Overwrite existing config"),
 ) -> None:
     """Bootstrap an org control plane with org-config.yaml and shared skills."""
     from n3rv.org import OrgConfig
 
+    if root is None:
+        root = Path.cwd()
     config_dir = root / ".n3rv"
     config_path = config_dir / ORG_CONFIG_FILENAME
 
@@ -69,11 +71,13 @@ def org_init(
 @org_app.command("add-satellite")
 def org_add_satellite(
     name: str = typer.Argument(..., help="Satellite project name"),
-    root: Path = typer.Option(Path.cwd(), "--root", help="Org root directory"),
+    root: Path | None = typer.Option(None, "--root", help="Org root directory (default: CWD)"),
     description: str = typer.Option("", "--description", help="Short description"),
     satellite_type: str = typer.Option("satellite", "--type", help="Project type: satellite, tool"),
 ) -> None:
     """Create a new satellite: gh repo, clone, n3rv init, register in org config."""
+    if root is None:
+        root = Path.cwd()
     try:
         org_root = resolve_org_root(root)
     except OrgNotFoundError as exc:
@@ -142,7 +146,7 @@ def org_add_satellite(
 
 @org_app.command("sync")
 def org_sync(
-    root: Path = typer.Option(Path.cwd(), "--root", help="Org root directory"),
+    root: Path | None = typer.Option(None, "--root", help="Org root directory (default: CWD)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Preview changes without writing"),
     only: str | None = typer.Option(
         None,
@@ -151,6 +155,8 @@ def org_sync(
     ),
 ) -> None:
     """Sync all satellites: run n3rv update and regenerate hub registry."""
+    if root is None:
+        root = Path.cwd()
     try:
         org_root = resolve_org_root(root)
     except OrgNotFoundError as exc:
