@@ -171,7 +171,7 @@ Dual-store architecture:
 
 ### Memory Server (`src/n3rv/mcp/memory_server.py`)
 
-Exposes 12 tools to agents via FastMCP. Tools are available unless `NERV_MEMORY_PROFILE=safe`.
+Exposes 12 tools to agents via FastMCP. Tools are available unless `N3RV_MEMORY_PROFILE=safe`.
 
 | Tool | Description |
 |------|-------------|

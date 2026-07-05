@@ -141,10 +141,10 @@ def test_memory_stats_groups_active_memories(runtime_settings, monkeypatch) -> N
         scope="project",
     )
     service.memory_save(
-        content="Use uv for dependency management.",
+        content="Use hatchling for build backend.",
         title="Config",
         type="config",
-        topic_key="uv-config",
+        topic_key="build-config",
         scope="personal",
     )
     monkeypatch.setenv("N3RV_AGENT_SOURCE", "opencode")

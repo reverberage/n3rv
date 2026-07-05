@@ -6,19 +6,19 @@ N3RV is a local-only tool that runs as part of your development workflow. It is 
 
 ### Prerequisites
 
-- Python >= 3.14
-- [uv](https://github.com/astral-sh/uv) package manager
+- Python >= 3.11
+- pip (Python package manager)
 - systemd (Linux) for daemon mode
 
 ### Install
 
 ```bash
-git clone https://github.com/your-org/n3rv.git
+git clone https://github.com/reverberage/n3rv.git
 cd n3rv
-uv sync
+pip install -e ".[dev]"
 ```
 
-This installs N3RV in a virtual environment managed by uv. Entry points `n3rv`, `n3rv-memory`, and `n3rv-hub` are available.
+Entry points `n3rv`, `n3rv-memory`, and `n3rv-hub` are available.
 
 ### Verify Installation
 
@@ -82,13 +82,13 @@ hub:
   "mcp": {
     "n3rv-memory": {
       "type": "local",
-      "command": ["uv", "run", "n3rv-memory"],
-      "env": {"NERV_AGENT_SOURCE": "opencode"}
+      "command": ["n3rv-memory"],
+      "environment": {"N3RV_AGENT_SOURCE": "opencode"}
     },
     "n3rv-hub": {
       "type": "local",
-      "command": ["uv", "run", "n3rv-hub"],
-      "env": {"NERV_AGENT_SOURCE": "opencode"}
+      "command": ["n3rv-hub"],
+      "environment": {"N3RV_AGENT_SOURCE": "opencode"}
     }
   }
 }
@@ -98,10 +98,10 @@ hub:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NERV_LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `NERV_AGENT_SOURCE` | `opencode` | Agent identifier for memory scope and hub operations |
-| `NERV_HUB_URL` | `http://127.0.0.1:19820` | Hub URL for MCP delegation |
-| `NERV_MEMORY_PROFILE` | `full` | Memory tool availability (`full` or `safe`) |
+| `N3RV_LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `N3RV_AGENT_SOURCE` | `opencode` | Agent identifier for memory scope and hub operations |
+| `N3RV_HUB_URL` | `http://127.0.0.1:19820` | Hub URL for MCP delegation |
+| `N3RV_MEMORY_PROFILE` | `full` | Memory tool availability (`full` or `safe`) |
 
 ## Multi-Agent Architecture
 
@@ -152,7 +152,7 @@ opencode Go subscription ($10/mo, $60/mo cap) provides per-request limits that c
 
 **Scaling tips:**
 - Reserve paid models for Hub-routed tasks; use free Zen models for agent-internal work
-- `NERV_MEMORY_PROFILE=safe` disables destructive tools, saving tokens on safety checks
+- `N3RV_MEMORY_PROFILE=safe` disables destructive tools, saving tokens on safety checks
 - Enable "Use balance" in opencode Go console to fall back to Zen credits when Go limit is hit
 - Monitor usage: `opencode stats --days 7`
 
@@ -161,9 +161,7 @@ opencode Go subscription ($10/mo, $60/mo cap) provides per-request limits that c
 ```bash
 cd /path/to/n3rv
 git pull
-uv sync
-# If installed globally, reinstall to pick up source changes:
-uv tool install --reinstall .
+pip install -e ".[dev]"
 ```
 
 To update scaffolding in existing projects:
@@ -182,15 +180,14 @@ N3RV's memory and hub components are local-only. Use the CLI for scaffolding:
 ```yaml
 - name: Setup N3RV
   run: |
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    uv sync
+    pip install n3rv
     n3rv init --stack python --force
 ```
 
 ### Testing in CI
 
 ```bash
-uv run pytest
+pytest
 ```
 
 ## Troubleshooting
@@ -227,5 +224,5 @@ On Python 3.14 or Windows, ONNXRuntime may not have a compatible wheel. N3RV fal
 
 1. Verify hub daemon is running: `n3rv daemon status`
 2. Check direct connection: `curl http://127.0.0.1:19820/health`
-3. Verify `NERV_HUB_URL` matches your hub address
+3. Verify `N3RV_HUB_URL` matches your hub address
 4. Check `.n3rv/a2a-config.yaml` for port conflicts

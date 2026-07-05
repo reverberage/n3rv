@@ -97,7 +97,7 @@ Returns: `SessionStartResult` with `session_id`, `started_at`, `context` list.
 
 ### `memory_delete`
 
-Delete a stored memory by ID. Available only when `NERV_MEMORY_PROFILE != "safe"`.
+Delete a stored memory by ID. Available only when `N3RV_MEMORY_PROFILE != "safe"`.
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -182,7 +182,7 @@ List tasks assigned to an agent that are not yet completed.
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
-| `agent_id` | string | No | Agent ID (defaults to `NERV_AGENT_SOURCE`) |
+| `agent_id` | string | No | Agent ID (defaults to `N3RV_AGENT_SOURCE`) |
 
 Returns: List of task objects.
 
@@ -194,7 +194,7 @@ Check pending tasks assigned to the current agent.
 
 | Param | Type | Required | Description |
 |-------|------|----------|-------------|
-| `agent_id` | string | No | Agent ID (defaults to `NERV_AGENT_SOURCE`) |
+| `agent_id` | string | No | Agent ID (defaults to `N3RV_AGENT_SOURCE`) |
 
 Returns: List of task objects.
 

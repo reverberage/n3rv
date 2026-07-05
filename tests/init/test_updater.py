@@ -79,7 +79,7 @@ def test_deep_merge_empty_overlay():
 
 def test_manifest_has_expected_entries():
     """Test manifest has expected number of entries."""
-    assert len(FILE_UPDATE_MANIFEST) == 33
+    assert len(FILE_UPDATE_MANIFEST) == 34
 
 
 def test_manifest_marker_files():
@@ -117,9 +117,10 @@ def test_manifest_git_hooks_are_executable():
 
 
 def test_manifest_create_if_missing_files():
-    """Test create-if-missing files — none in current manifest."""
+    """Test create-if-missing files."""
     cim_files = [e for e in FILE_UPDATE_MANIFEST if e.strategy == UpdateStrategy.CREATE_IF_MISSING]
-    assert len(cim_files) == 0
+    assert len(cim_files) == 1
+    assert cim_files[0].output_path == ".opencode/commands/new-satellite.md"
 
 
 def test_update_summary_counts_correctly():

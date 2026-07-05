@@ -11,7 +11,7 @@ hub-skill-ids: [review]
 
 ## Framework
 
-pytest — `uv run pytest -q`
+pytest — `pytest -q`
 
 ## Rules
 
