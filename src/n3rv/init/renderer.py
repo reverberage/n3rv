@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from jinja2 import (
+    ChoiceLoader,
     Environment,
     FileSystemLoader,
     StrictUndefined,
@@ -18,11 +19,24 @@ class TemplateRenderError(Exception):
 
 
 class TemplateEngine:
-    """Jinja2-based template rendering engine."""
+    """Jinja2-based template rendering engine.
 
-    def __init__(self, templates_dir: Path) -> None:
+    Supports template resolution with the following priority chain:
+        project_overrides > shared > bundled
+
+    When *shared_templates_dir* is provided, shared templates override bundled
+    (template name collision => shared wins). Project-level overrides are added
+    by the caller prepending another FileSystemLoader to the ChoiceLoader list.
+    """
+
+    def __init__(self, templates_dir: Path, shared_templates_dir: Path | None = None) -> None:
+        loaders = []
+        if shared_templates_dir is not None:
+            loaders.append(FileSystemLoader(str(shared_templates_dir)))
+        loaders.append(FileSystemLoader(str(templates_dir)))
+        loader = ChoiceLoader(loaders) if len(loaders) > 1 else loaders[0]
         self.env = Environment(
-            loader=FileSystemLoader(str(templates_dir)),
+            loader=loader,
             autoescape=False,
             undefined=StrictUndefined,
         )

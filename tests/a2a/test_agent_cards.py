@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import yaml
+
 from n3rv.a2a.agent_cards import (
     default_agent_cards,
     hub_agent_card,
+    load_agent_cards,
     opencode_agent_card,
     sdd_archiver_card,
     sdd_designer_card,
@@ -105,3 +110,76 @@ def test_sdd_cards_present_in_default(runtime_settings) -> None:
         assert agent_id in cards, f"Missing SDD agent card: {agent_id}"
         assert cards[agent_id].skills, f"SDD card {agent_id} has no skills"
         assert cards[agent_id].name, f"SDD card {agent_id} has no name"
+
+
+# --------------------------------------------------------------------------- #
+# Hybrid discovery (org-aware)
+# --------------------------------------------------------------------------- #
+
+
+def test_load_without_org_config_returns_only_infra(runtime_settings) -> None:
+    """Without org_config_path, only 9 infrastructure cards are returned."""
+    cards = load_agent_cards(runtime_settings)
+    expected = {"hub", "opencode"} | SDD_AGENTS
+    assert set(cards) == expected
+
+
+def test_load_with_org_config_adds_satellite_cards(
+    runtime_settings, tmp_path: Path
+) -> None:
+    """With valid org config, satellite cards are added."""
+    from n3rv.org import OrgConfig, OrgProject
+
+    # Create a satellite with a2a-config.yaml
+    sat_path = tmp_path / "satellites" / "transcriber"
+    (sat_path / ".n3rv").mkdir(parents=True)
+    a2a_config = {"project": "transcriber", "hub": {"host": "127.0.0.1", "port": 19821}}
+    (sat_path / ".n3rv" / "a2a-config.yaml").write_text(
+        yaml.safe_dump(a2a_config), encoding="utf-8"
+    )
+
+    # Create org config
+    config = OrgConfig(
+        projects=[
+            OrgProject(
+                name="transcriber",
+                path=Path("satellites/transcriber"),
+                type="satellite",
+            ),
+        ]
+    )
+    config_path = tmp_path / ".n3rv" / "org-config.yaml"
+    config.to_yaml(config_path)
+
+    cards = load_agent_cards(runtime_settings, org_config_path=config_path)
+    assert "n3rv-transcriber" in cards
+    assert cards["n3rv-transcriber"].name == "n3rv-transcriber"
+
+    # Infrastructure cards still present
+    assert "hub" in cards
+    assert "opencode" in cards
+
+
+def test_load_with_invalid_org_config_returns_only_infra(
+    runtime_settings, tmp_path: Path
+) -> None:
+    """Invalid org config path logs warning and returns 9 infra cards."""
+    bad_path = tmp_path / "nonexistent.yaml"
+    cards = load_agent_cards(runtime_settings, org_config_path=bad_path)
+    expected = {"hub", "opencode"} | SDD_AGENTS
+    assert set(cards) == expected
+
+
+def test_load_with_empty_org_config_returns_only_infra(
+    runtime_settings, tmp_path: Path
+) -> None:
+    """Org config with no satellites returns 9 infra cards only."""
+    from n3rv.org import OrgConfig
+
+    config = OrgConfig()
+    config_path = tmp_path / ".n3rv" / "org-config.yaml"
+    config.to_yaml(config_path)
+
+    cards = load_agent_cards(runtime_settings, org_config_path=config_path)
+    expected = {"hub", "opencode"} | SDD_AGENTS
+    assert set(cards) == expected

@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import logging
+from pathlib import Path
+
 from n3rv.config import RuntimeSettings
 from n3rv.models.a2a import AgentCapabilities, AgentSkill, NervAgentCard
+
+logger = logging.getLogger("n3rv.agent_cards")
 
 
 def hub_agent_card(settings: RuntimeSettings) -> NervAgentCard:
@@ -186,5 +191,31 @@ def default_agent_cards(settings: RuntimeSettings) -> dict[str, NervAgentCard]:
     }
 
 
-def load_agent_cards(settings: RuntimeSettings) -> dict[str, NervAgentCard]:
-    return default_agent_cards(settings)
+def load_agent_cards(
+    settings: RuntimeSettings,
+    org_config_path: Path | None = None,
+) -> dict[str, NervAgentCard]:
+    """Load agent cards.
+
+    Without *org_config_path*, returns the default 9 infrastructure cards.
+    With a valid *org_config_path*, extends with satellite agent cards
+    discovered from the org config.
+    """
+    cards = default_agent_cards(settings)
+    if org_config_path is not None:
+        try:
+            from n3rv.org import OrgConfig
+
+            org = OrgConfig.from_yaml(org_config_path)
+            config_dir = org_config_path.parent.parent
+            satellite_cards = org.discover_satellite_cards(config_dir)
+            for card in satellite_cards:
+                cards[card.name] = card
+            logger.info(
+                "loaded %d satellite agent cards from %s",
+                len(satellite_cards),
+                org_config_path,
+            )
+        except Exception as exc:
+            logger.warning("Failed to load org agent cards from %s: %s", org_config_path, exc)
+    return cards

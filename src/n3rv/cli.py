@@ -6,6 +6,7 @@ import typer
 
 from n3rv.a2a.hub import main as hub_main
 from n3rv.cli_memory import memory_app
+from n3rv.cli_org import org_app
 from n3rv.daemon import (
     daemon_enable,
     daemon_install,
@@ -22,6 +23,7 @@ daemon_app = typer.Typer(help="Manage n3rv hub daemon")
 app.add_typer(hub_app, name="hub")
 app.add_typer(daemon_app, name="daemon")
 app.add_typer(memory_app, name="memory")
+app.add_typer(org_app, name="org")
 
 
 @hub_app.command("start")
