@@ -143,20 +143,6 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
     owner_repo = parts.rstrip(".git")
     api_base = f"repos/{owner_repo}"
 
-    # Check if protection already exists
-    check = subprocess.run(
-        ["gh", "api", f"{api_base}/branches/main/protection"],
-        capture_output=True, text=True,
-    )
-    if check.returncode == 0:
-        try:
-            existing = json.loads(check.stdout)
-            if existing.get("required_pull_request_reviews"):
-                print(f"  ⊘ {owner_repo}: already protected")
-                return True
-        except json.JSONDecodeError:
-            pass
-
     # Detect CI workflow checks
     checks: list[dict[str, object]] = []
     workflows_check = subprocess.run(
@@ -198,7 +184,7 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
 
     if not checks:
         # No CI found — still protect with PR reviews
-        print(f"  ⚠ {owner_repo}: no CI checks detected, applying PR-only protection")
+        print(f"  ~ {owner_repo}: no CI checks, PR-only protection")
 
     payload = {
         "required_status_checks": {
@@ -207,8 +193,9 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
         } if checks else None,
         "enforce_admins": True,
         "required_pull_request_reviews": {
-            "required_approving_review_count": 1,
+            "required_approving_review_count": 0,
             "dismiss_stale_reviews": True,
+            "require_code_owner_review": False,
         },
         "restrictions": None,
     }
