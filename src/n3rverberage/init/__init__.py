@@ -421,7 +421,7 @@ def run_init(
             print("⚠ Warning: No .git directory found, skipping git hooks config")
 
         if configure_gitignore(root):
-            print("✓ Added .n3rverberage/ to .gitignore")
+            print("✓ Added n3rverberage patterns to .gitignore")
         else:
             pass  # already present or no git repo
 

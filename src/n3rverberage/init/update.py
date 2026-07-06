@@ -22,7 +22,14 @@ from n3rverberage.init.lockfile import (
 )
 from n3rverberage.init.registry import write_registry
 from n3rverberage.init.renderer import TemplateEngine
-from n3rverberage.init.writer import MARKER_END, MARKER_START, validate_markers, write_file
+from n3rverberage.init.writer import (
+    MARKER_END,
+    MARKER_START,
+    configure_git_hooks,
+    configure_gitignore,
+    validate_markers,
+    write_file,
+)
 
 
 class UpdateStrategy(StrEnum):
@@ -477,6 +484,14 @@ def run_update(
                 print(f"✓ Updated {registry_path.relative_to(root)}")
             except Exception as exc:
                 print(f"⚠ Skill registry not written: {exc}")
+
+            if configure_git_hooks(root):
+                print("✓ Configured git hooks")
+            else:
+                print("⚠ Warning: No .git directory found, skipping git hooks config")
+
+            if configure_gitignore(root):
+                print("✓ Added n3rverberage patterns to .gitignore")
 
             # Final lockfile save with all entries
             full_rendered: dict[str, Path] = {}

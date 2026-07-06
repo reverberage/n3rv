@@ -116,8 +116,27 @@ def configure_git_hooks(root: Path) -> bool:
     return True
 
 
+GITIGNORE_SECTION_HEADER = "# N3RVERBERAGE — NEVER COMMIT (template-controlled)"
+
+GITIGNORE_PATTERNS: list[str] = [
+    ".n3rverberage/",
+    ".opencode/",
+    ".githooks/",
+    "AGENTS.md",
+    "opencode.json",
+]
+
+
+def _gitignore_block() -> str:
+    lines = [GITIGNORE_SECTION_HEADER] + GITIGNORE_PATTERNS + [""]
+    return "\n".join(lines)
+
+
 def configure_gitignore(root: Path) -> bool:
-    """Ensure .n3rverberage/ is in .gitignore.
+    """Ensure all n3rverberage-generated paths are in .gitignore.
+
+    Appends a section with all paths n3rverberage owns. Idempotent —
+    checks for the section header before writing.
 
     Args:
         root: Project root directory
@@ -130,18 +149,17 @@ def configure_gitignore(root: Path) -> bool:
         return False
 
     gitignore = root / ".gitignore"
-    marker = ".n3rverberage/"
+    existing = gitignore.read_text(encoding="utf-8") if gitignore.exists() else ""
 
-    if gitignore.exists():
-        content = gitignore.read_text(encoding="utf-8")
-        # Already present
-        if marker in content:
-            return False
+    if GITIGNORE_SECTION_HEADER in existing:
+        return False
 
-    # Append entry
-    entry = f"\n{marker}\n"
+    block = _gitignore_block()
+    if existing:
+        block = "\n" + block
+
     with gitignore.open("a", encoding="utf-8") as fh:
-        fh.write(entry)
+        fh.write(block)
 
     return True
 
