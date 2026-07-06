@@ -164,9 +164,7 @@ class SkillRegistry:
             hub_ids = ", ".join(e.hub_skill_ids) if e.hub_skill_ids else "—"
             when = e.when_to_use[:60] + "…" if len(e.when_to_use) > 60 else e.when_to_use
             desc = e.description[:60] + "…" if len(e.description) > 60 else e.description
-            lines.append(
-                f"| `{e.name}` | {desc} | {when} | {e.model} | {e.origin} | {hub_ids} |"
-            )
+            lines.append(f"| `{e.name}` | {desc} | {when} | {e.model} | {e.origin} | {hub_ids} |")
 
         return "\n".join(lines) + "\n"
 

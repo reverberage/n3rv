@@ -60,9 +60,7 @@ def org_init(
     readme = shared_skills_dir / "README.md"
     if not readme.exists():
         readme.write_text(
-            "# Shared Skills\n\n"
-            "Place shared SKILL.md files here. "
-            "They are loaded alongside satellite-local skills.\n"
+            "# Shared Skills\n\nPlace shared SKILL.md files here. They are loaded alongside satellite-local skills.\n"
         )
         print(f"✓ Created {readme}")
     print(f"✓ Org initialized at {root}")
@@ -239,10 +237,7 @@ def org_protect(
     config_path = org_root / ".n3rverberage" / ORG_CONFIG_FILENAME
     config = OrgConfig.from_yaml(config_path)
 
-    projects = [
-        p for p in config.projects
-        if p.repo_url and (project_name is None or p.name == project_name)
-    ]
+    projects = [p for p in config.projects if p.repo_url and (project_name is None or p.name == project_name)]
 
     if not projects:
         if project_name:

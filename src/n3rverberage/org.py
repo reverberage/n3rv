@@ -71,9 +71,7 @@ class OrgConfig(BaseModel):
             p["path"] = str(p["path"])
         path.write_text(yaml.safe_dump(data), encoding="utf-8")
 
-    def discover_satellite_cards(
-        self, config_dir: Path | None = None
-    ) -> list[NervAgentCard]:
+    def discover_satellite_cards(self, config_dir: Path | None = None) -> list[NervAgentCard]:
         """Discover agent cards for all satellite projects."""
         cards: list[NervAgentCard] = []
         base = config_dir or Path.cwd()
@@ -147,7 +145,8 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
     checks: list[dict[str, object]] = []
     workflows_check = subprocess.run(
         ["gh", "api", f"{api_base}/actions/workflows"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if workflows_check.returncode == 0:
         try:
@@ -157,14 +156,14 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
                 wf_name = wf.get("name", "CI")
                 wf_content = subprocess.run(
                     ["gh", "api", f"{api_base}/contents/{wf['path']}"],
-                    capture_output=True, text=True,
+                    capture_output=True,
+                    text=True,
                 )
                 if wf_content.returncode == 0:
                     try:
                         import base64
-                        content = base64.b64decode(
-                            json.loads(wf_content.stdout).get("content", "")
-                        ).decode()
+
+                        content = base64.b64decode(json.loads(wf_content.stdout).get("content", "")).decode()
                         # Detect top-level jobs (2-space indent, under "jobs:")
                         in_jobs = False
                         for line in content.splitlines():
@@ -190,7 +189,9 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
         "required_status_checks": {
             "strict": True,
             "checks": checks,
-        } if checks else None,
+        }
+        if checks
+        else None,
         "enforce_admins": True,
         "required_pull_request_reviews": {
             "required_approving_review_count": 0,
@@ -208,7 +209,8 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
     result = subprocess.run(
         ["gh", "api", f"{api_base}/branches/main/protection", "--method", "PUT", "--input", "-"],
         input=json.dumps(payload),
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         check_names = [c["context"] for c in checks] if checks else []
@@ -230,6 +232,5 @@ def resolve_org_root(start: Path | None = None) -> Path:
         if config_path.exists():
             return ancestor
     raise OrgNotFoundError(
-        f"No .n3rverberage/{ORG_CONFIG_FILENAME} found from {start or Path.cwd()}. "
-        "Run 'n3rverberage org init' first."
+        f"No .n3rverberage/{ORG_CONFIG_FILENAME} found from {start or Path.cwd()}. Run 'n3rverberage org init' first."
     )

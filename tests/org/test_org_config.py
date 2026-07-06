@@ -183,9 +183,7 @@ class TestDiscoverSatelliteCards:
         sat_path = tmp_path / "satellites" / "transcriber"
         (sat_path / ".n3rverberage").mkdir(parents=True)
         a2a_config = {"project": "transcriber", "hub": {"host": "127.0.0.1", "port": 19821}}
-        (sat_path / ".n3rverberage" / "a2a-config.yaml").write_text(
-            yaml.safe_dump(a2a_config), encoding="utf-8"
-        )
+        (sat_path / ".n3rverberage" / "a2a-config.yaml").write_text(yaml.safe_dump(a2a_config), encoding="utf-8")
 
         config = OrgConfig(
             projects=[

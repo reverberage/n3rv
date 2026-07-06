@@ -17,9 +17,7 @@ def _make_a2a_config(sat_path: Path, name: str, port: int = 19821) -> None:
 
     (sat_path / ".n3rverberage").mkdir(parents=True)
     a2a_config = {"project": name, "hub": {"host": "127.0.0.1", "port": port}}
-    (sat_path / ".n3rverberage" / "a2a-config.yaml").write_text(
-        yaml.safe_dump(a2a_config), encoding="utf-8"
-    )
+    (sat_path / ".n3rverberage" / "a2a-config.yaml").write_text(yaml.safe_dump(a2a_config), encoding="utf-8")
 
 
 class TestFullOrgWorkflow:

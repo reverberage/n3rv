@@ -88,16 +88,12 @@ def validate_context(context: dict[str, Any], schema: dict[str, Any]) -> None:
         # Type check
         py_type = _TYPES.get(var_type)
         if py_type and not isinstance(value, py_type):
-            errors.append(
-                f"Context variable '{var_name}': expected {var_type}, got {type(value).__name__}"
-            )
+            errors.append(f"Context variable '{var_name}': expected {var_type}, got {type(value).__name__}")
             continue
 
         # Enum check
         if enum_vals and value not in enum_vals:
-            errors.append(
-                f"Context variable '{var_name}': '{value}' not in allowed values {enum_vals}"
-            )
+            errors.append(f"Context variable '{var_name}': '{value}' not in allowed values {enum_vals}")
 
     # Warn about unknown variables
     known = set(schema.keys())
@@ -107,9 +103,7 @@ def validate_context(context: dict[str, Any], schema: dict[str, Any]) -> None:
         logger.debug("Unknown context variables (ignored): %s", sorted(unknown))
 
     if errors:
-        raise ContextValidationError(
-            "Template context validation failed:\n  " + "\n  ".join(errors)
-        )
+        raise ContextValidationError("Template context validation failed:\n  " + "\n  ".join(errors))
 
 
 class TemplateEngine:
@@ -168,6 +162,4 @@ class TemplateEngine:
         except TemplateNotFound as exc:
             raise TemplateRenderError(f"Template not found: {template_name}") from exc
         except UndefinedError as exc:
-            raise TemplateRenderError(
-                f"Undefined variable in template {template_name}: {exc}"
-            ) from exc
+            raise TemplateRenderError(f"Undefined variable in template {template_name}: {exc}") from exc
