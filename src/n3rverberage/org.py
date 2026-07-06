@@ -111,6 +111,127 @@ class OrgConfig(BaseModel):
         return cards
 
 
+def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
+    """Apply branch protection to a GitHub repository's main branch.
+
+    Uses ``gh api`` to detect CI workflow checks and apply:
+    - Required status checks from CI jobs
+    - Required PR reviews (1 approval, dismiss stale)
+    - Admin enforcement
+
+    Args:
+        repo_url: Full GitHub repo URL (e.g. https://github.com/reverberage/hub)
+        dry_run: If True, print what would be done without applying.
+
+    Returns:
+        True if protection was applied or would be applied, False on error.
+    """
+    import json
+    import subprocess
+
+    # Parse owner/name from URL
+    # Supports: https://github.com/owner/name, git@github.com:owner/name.git
+    repo_url_s = str(repo_url)
+    if "github.com/" in repo_url_s:
+        parts = repo_url_s.rstrip("/").split("github.com/")[-1]
+    elif "github.com:" in repo_url_s:
+        parts = repo_url_s.split("github.com:")[-1].rstrip(".git")
+    else:
+        print(f"  ✗ Cannot parse repo URL: {repo_url}")
+        return False
+
+    owner_repo = parts.rstrip(".git")
+    api_base = f"repos/{owner_repo}"
+
+    # Check if protection already exists
+    check = subprocess.run(
+        ["gh", "api", f"{api_base}/branches/main/protection"],
+        capture_output=True, text=True,
+    )
+    if check.returncode == 0:
+        try:
+            existing = json.loads(check.stdout)
+            if existing.get("required_pull_request_reviews"):
+                print(f"  ⊘ {owner_repo}: already protected")
+                return True
+        except json.JSONDecodeError:
+            pass
+
+    # Detect CI workflow checks
+    checks: list[dict[str, object]] = []
+    workflows_check = subprocess.run(
+        ["gh", "api", f"{api_base}/actions/workflows"],
+        capture_output=True, text=True,
+    )
+    if workflows_check.returncode == 0:
+        try:
+            workflows = json.loads(workflows_check.stdout).get("workflows", [])
+            ci_workflows = [w for w in workflows if w.get("path", "").endswith("ci.yml")]
+            for wf in ci_workflows:
+                wf_name = wf.get("name", "CI")
+                wf_content = subprocess.run(
+                    ["gh", "api", f"{api_base}/contents/{wf['path']}"],
+                    capture_output=True, text=True,
+                )
+                if wf_content.returncode == 0:
+                    try:
+                        import base64
+                        content = base64.b64decode(
+                            json.loads(wf_content.stdout).get("content", "")
+                        ).decode()
+                        # Detect top-level jobs (2-space indent, under "jobs:")
+                        in_jobs = False
+                        for line in content.splitlines():
+                            if line.rstrip() == "jobs:":
+                                in_jobs = True
+                                continue
+                            if in_jobs and not line.startswith(" ") and line.strip():
+                                in_jobs = False
+                            if in_jobs and line.startswith("  ") and not line.startswith("    "):
+                                job_name = line.strip().rstrip(":").rstrip()
+                                if job_name and " " not in job_name:
+                                    checks.append({"context": f"{wf_name} / {job_name}", "app_id": 15368})
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+    if not checks:
+        # No CI found — still protect with PR reviews
+        print(f"  ⚠ {owner_repo}: no CI checks detected, applying PR-only protection")
+
+    payload = {
+        "required_status_checks": {
+            "strict": True,
+            "checks": checks,
+        } if checks else None,
+        "enforce_admins": True,
+        "required_pull_request_reviews": {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews": True,
+        },
+        "restrictions": None,
+    }
+
+    if dry_run:
+        check_names = [c["context"] for c in checks] if checks else []
+        print(f"  → {owner_repo}: would protect with checks={check_names}")
+        return True
+
+    result = subprocess.run(
+        ["gh", "api", f"{api_base}/branches/main/protection", "--method", "PUT", "--input", "-"],
+        input=json.dumps(payload),
+        capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        check_names = [c["context"] for c in checks] if checks else []
+        print(f"  ✓ {owner_repo}: protected with checks={check_names}")
+        return True
+    else:
+        print(f"  ✗ {owner_repo}: failed ({result.stderr.strip()})")
+        return False
+
+
 def resolve_org_root(start: Path | None = None) -> Path:
     """Walk up from *start* looking for .n3rverberage/org-config.yaml.
 

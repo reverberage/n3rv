@@ -16,6 +16,7 @@ from n3rverberage.org import (
     OrgConfig,
     OrgNotFoundError,
     OrgProject,
+    protect_repo,
     resolve_org_root,
 )
 
@@ -208,4 +209,57 @@ def org_sync(
     skipped = sum(1 for r in results if r[1].startswith("SKIPPED"))
     errors = sum(1 for r in results if r[1].startswith("ERROR"))
     print(f"\nSummary: {success} synced, {skipped} skipped, {errors} errors")
+    raise typer.Exit(code=1 if errors > 0 else 0)
+
+
+@org_app.command("protect")
+def org_protect(
+    project_name: str | None = typer.Argument(
+        None,
+        help="Project name to protect (default: all registered projects)",
+    ),
+    root: Path | None = typer.Option(None, "--root", help="Org root directory (default: CWD)"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview changes without applying"),
+) -> None:
+    """Apply GitHub branch protection to registered projects.
+
+    Detects CI workflow checks and configures:
+    - Required status checks from CI jobs
+    - Required PR reviews (1 approval, dismiss stale)
+    - Admin enforcement
+    """
+    if root is None:
+        root = Path.cwd()
+    try:
+        org_root = resolve_org_root(root)
+    except OrgNotFoundError as exc:
+        print(f"✗ {exc}")
+        raise typer.Exit(code=1) from exc
+
+    config_path = org_root / ".n3rverberage" / ORG_CONFIG_FILENAME
+    config = OrgConfig.from_yaml(config_path)
+
+    projects = [
+        p for p in config.projects
+        if p.repo_url and (project_name is None or p.name == project_name)
+    ]
+
+    if not projects:
+        if project_name:
+            print(f"✗ Project '{project_name}' not found or has no repo_url")
+        else:
+            print("✗ No registered projects with repo_url found")
+        raise typer.Exit(code=1)
+
+    success = 0
+    errors = 0
+    for project in projects:
+        ok = protect_repo(project.repo_url, dry_run=dry_run)
+        if ok:
+            success += 1
+        else:
+            errors += 1
+
+    prefix = "[DRY RUN] " if dry_run else ""
+    print(f"\n{prefix}{success} protected, {errors} failed")
     raise typer.Exit(code=1 if errors > 0 else 0)
