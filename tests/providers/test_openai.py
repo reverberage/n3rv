@@ -67,12 +67,8 @@ class TestCompleteStructured:
             name: str
             age: int
 
-        mock_create.return_value = make_mock_response(
-            content='{"name": "Bob", "age": 25}'
-        )
-        result = provider.complete_structured(
-            [{"role": "user", "content": "Extract"}], Person
-        )
+        mock_create.return_value = make_mock_response(content='{"name": "Bob", "age": 25}')
+        result = provider.complete_structured([{"role": "user", "content": "Extract"}], Person)
         assert isinstance(result, Person)
         assert result.name == "Bob"
 

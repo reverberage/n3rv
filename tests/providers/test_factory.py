@@ -32,15 +32,17 @@ class TestGetProvider:
             assert p.model == "qwen3-coder-plus"
 
     def test_env_var_default(self) -> None:
-        with patch("openai.OpenAI"), patch.dict(
-            "os.environ", {"N3RVERBERAGE_PROVIDER": "openai", "OPENAI_API_KEY": "k"}
+        with (
+            patch("openai.OpenAI"),
+            patch.dict("os.environ", {"N3RVERBERAGE_PROVIDER": "openai", "OPENAI_API_KEY": "k"}),
         ):
             p = get_provider()
             assert p.model == "gpt-4"
 
     def test_explicit_name(self) -> None:
-        with patch("openai.OpenAI"), patch.dict(
-            "os.environ", {"N3RVERBERAGE_PROVIDER": "openai", "DASHSCOPE_API_KEY": "k"}
+        with (
+            patch("openai.OpenAI"),
+            patch.dict("os.environ", {"N3RVERBERAGE_PROVIDER": "openai", "DASHSCOPE_API_KEY": "k"}),
         ):
             p = get_provider("qwen")
             assert isinstance(p, ModelProvider)
@@ -83,12 +85,15 @@ class TestGetProvider:
 
 class TestGetProviderFallback:
     def test_fallback_from_env(self) -> None:
-        with patch("openai.OpenAI"), patch.dict(
-            "os.environ",
-            {
-                "N3RVERBERAGE_FALLBACK_PROVIDERS": "qwen,local",
-                "DASHSCOPE_API_KEY": "k",
-            },
+        with (
+            patch("openai.OpenAI"),
+            patch.dict(
+                "os.environ",
+                {
+                    "N3RVERBERAGE_FALLBACK_PROVIDERS": "qwen,local",
+                    "DASHSCOPE_API_KEY": "k",
+                },
+            ),
         ):
             p = get_provider("fallback")
             assert isinstance(p, FallbackProvider)
@@ -99,12 +104,15 @@ class TestGetProviderFallback:
                 get_provider("fallback")
 
     def test_fallback_env_mixed_model_overrides(self) -> None:
-        with patch("openai.OpenAI"), patch.dict(
-            "os.environ",
-            {
-                "N3RVERBERAGE_FALLBACK_PROVIDERS": "qwen:model-a,qwen:model-b",
-                "DASHSCOPE_API_KEY": "k",
-            },
+        with (
+            patch("openai.OpenAI"),
+            patch.dict(
+                "os.environ",
+                {
+                    "N3RVERBERAGE_FALLBACK_PROVIDERS": "qwen:model-a,qwen:model-b",
+                    "DASHSCOPE_API_KEY": "k",
+                },
+            ),
         ):
             p = get_provider("fallback")
             assert isinstance(p, FallbackProvider)
@@ -112,12 +120,15 @@ class TestGetProviderFallback:
             assert p._providers[1].model == "model-b"
 
     def test_fallback_single_provider(self) -> None:
-        with patch("openai.OpenAI"), patch.dict(
-            "os.environ",
-            {
-                "N3RVERBERAGE_FALLBACK_PROVIDERS": "qwen",
-                "DASHSCOPE_API_KEY": "k",
-            },
+        with (
+            patch("openai.OpenAI"),
+            patch.dict(
+                "os.environ",
+                {
+                    "N3RVERBERAGE_FALLBACK_PROVIDERS": "qwen",
+                    "DASHSCOPE_API_KEY": "k",
+                },
+            ),
         ):
             p = get_provider("fallback")
             assert isinstance(p, FallbackProvider)

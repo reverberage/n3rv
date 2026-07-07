@@ -67,18 +67,14 @@ class TestCompleteStructured:
             name: str
 
         mock_create.return_value = make_mock_response(content='{"name": "Local"}')
-        result = provider.complete_structured(
-            [{"role": "user", "content": "Extract"}], Person
-        )
+        result = provider.complete_structured([{"role": "user", "content": "Extract"}], Person)
         assert isinstance(result, Person)
         assert result.name == "Local"
 
 
 class TestCompleteWithTools:
     def test_basic(self, provider: LocalProvider, mock_create: MagicMock) -> None:
-        mock_create.return_value = make_mock_response(
-            content="Local response with tools"
-        )
+        mock_create.return_value = make_mock_response(content="Local response with tools")
         result = provider.complete_with_tools(
             [{"role": "user", "content": "Hi"}],
             [{"type": "function", "function": {"name": "f"}}],

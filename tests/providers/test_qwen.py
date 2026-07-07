@@ -70,9 +70,7 @@ class TestComplete:
         assert "FreeTierOnly" in (exc.value.body or "")
 
     def test_429_without_free_tier(self, provider: QwenProvider, mock_create: MagicMock) -> None:
-        mock_create.side_effect = make_429_error(
-            body={"message": "Rate limited, slow down"}
-        )
+        mock_create.side_effect = make_429_error(body={"message": "Rate limited, slow down"})
         with pytest.raises(ProviderError) as exc:
             provider.complete([{"role": "user", "content": "Hi"}])
         assert exc.value.status_code == 429
@@ -81,6 +79,7 @@ class TestComplete:
     def test_401_unauthorized(self, provider: QwenProvider, mock_create: MagicMock) -> None:
         import httpx
         from openai import APIStatusError
+
         response = MagicMock(spec=httpx.Response)
         response.status_code = 401
         response.headers = {}
@@ -100,9 +99,7 @@ class TestComplete:
 
     def test_quota_header_capture(self, provider: QwenProvider, mock_create: MagicMock) -> None:
         assert provider.last_quota_remaining is None
-        mock_create.return_value = make_mock_response(
-            content="ok", headers={"x-qwen-quota-remaining": "999986"}
-        )
+        mock_create.return_value = make_mock_response(content="ok", headers={"x-qwen-quota-remaining": "999986"})
         provider.complete([{"role": "user", "content": "Hi"}])
         assert provider.last_quota_remaining == 999986
 
@@ -113,12 +110,8 @@ class TestCompleteStructured:
             name: str
             age: int
 
-        mock_create.return_value = make_mock_response(
-            content='{"name": "Alice", "age": 30}'
-        )
-        result = provider.complete_structured(
-            [{"role": "user", "content": "Extract person"}], Person
-        )
+        mock_create.return_value = make_mock_response(content='{"name": "Alice", "age": 30}')
+        result = provider.complete_structured([{"role": "user", "content": "Extract person"}], Person)
         assert isinstance(result, Person)
         assert result.name == "Alice"
         assert result.age == 30
@@ -227,9 +220,10 @@ class TestIsFreeTierExhausted:
         from unittest.mock import MagicMock
 
         from openai import APIStatusError
+
         exc = APIStatusError(
             message="test",
             response=MagicMock(status_code=429, headers={}),
-            body='AllocationQuota.FreeTierOnly',
+            body="AllocationQuota.FreeTierOnly",
         )
         assert _is_free_tier_exhausted(exc)

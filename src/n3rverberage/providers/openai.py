@@ -33,8 +33,7 @@ class OpenAIProvider(ModelProvider):
         resolved_key = self._api_key or os.environ.get("OPENAI_API_KEY")
         if not resolved_key:
             raise ValueError(
-                "OPENAI_API_KEY is not set. Provide api_key or set the "
-                "OPENAI_API_KEY environment variable."
+                "OPENAI_API_KEY is not set. Provide api_key or set the OPENAI_API_KEY environment variable."
             )
         self._client = openai.OpenAI(
             api_key=resolved_key,
@@ -58,9 +57,7 @@ class OpenAIProvider(ModelProvider):
                 **kwargs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(
-                self.model, exc.status_code, str(exc.body)
-            ) from exc
+            raise ProviderError(self.model, exc.status_code, str(exc.body)) from exc
         return response.choices[0].message.content or ""
 
     def complete_structured(
@@ -88,9 +85,7 @@ class OpenAIProvider(ModelProvider):
                 **kwargs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(
-                self.model, exc.status_code, str(exc.body)
-            ) from exc
+            raise ProviderError(self.model, exc.status_code, str(exc.body)) from exc
         raw = response.choices[0].message.content
         if not raw:
             raise ProviderError(self.model, 200, "Empty structured response")
@@ -120,9 +115,7 @@ class OpenAIProvider(ModelProvider):
                 **kwargs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(
-                self.model, exc.status_code, str(exc.body)
-            ) from exc
+            raise ProviderError(self.model, exc.status_code, str(exc.body)) from exc
         message = response.choices[0].message
         content = message.content or ""
 

@@ -31,11 +31,7 @@ class LocalProvider(ModelProvider):
         base_url: str | None = None,
     ) -> None:
         # Resolve before super().__init__ so _default_base_url() reads env
-        self._resolved_base_url = (
-            base_url
-            or os.environ.get("N3RVERBERAGE_LOCAL_BASE_URL")
-            or _DEFAULT_BASE_URL
-        )
+        self._resolved_base_url = base_url or os.environ.get("N3RVERBERAGE_LOCAL_BASE_URL") or _DEFAULT_BASE_URL
         super().__init__(api_key, model, self._resolved_base_url)
         self._client = openai.OpenAI(
             api_key=self._api_key or "not-needed",
@@ -59,9 +55,7 @@ class LocalProvider(ModelProvider):
                 **kwargs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(
-                self.model, exc.status_code, str(exc.body)
-            ) from exc
+            raise ProviderError(self.model, exc.status_code, str(exc.body)) from exc
         return response.choices[0].message.content or ""
 
     def complete_structured(
@@ -89,9 +83,7 @@ class LocalProvider(ModelProvider):
                 **kwargs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(
-                self.model, exc.status_code, str(exc.body)
-            ) from exc
+            raise ProviderError(self.model, exc.status_code, str(exc.body)) from exc
         raw = response.choices[0].message.content
         if not raw:
             raise ProviderError(self.model, 200, "Empty structured response")
@@ -121,9 +113,7 @@ class LocalProvider(ModelProvider):
                 **kwargs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(
-                self.model, exc.status_code, str(exc.body)
-            ) from exc
+            raise ProviderError(self.model, exc.status_code, str(exc.body)) from exc
         message = response.choices[0].message
         content = message.content or ""
 

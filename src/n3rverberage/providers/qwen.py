@@ -40,8 +40,7 @@ class QwenProvider(ModelProvider):
         resolved_key = self._api_key or os.environ.get("DASHSCOPE_API_KEY")
         if not resolved_key:
             raise ValueError(
-                "DASHSCOPE_API_KEY is not set. Provide api_key or set the "
-                "DASHSCOPE_API_KEY environment variable."
+                "DASHSCOPE_API_KEY is not set. Provide api_key or set the DASHSCOPE_API_KEY environment variable."
             )
         self._client = openai.OpenAI(
             api_key=resolved_key,

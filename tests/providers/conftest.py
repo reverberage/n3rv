@@ -37,9 +37,7 @@ def make_mock_response(
     response = MagicMock()
     response.choices = [choice]
     response.headers = headers or {}
-    response.model_dump.return_value = {
-        "choices": [{"message": {"content": content}}]
-    }
+    response.model_dump.return_value = {"choices": [{"message": {"content": content}}]}
     return response
 
 
@@ -75,9 +73,7 @@ def mock_search_provider(mocker):
     provider = mocker.MagicMock(spec=["complete_with_tools", "complete_structured", "complete"])
     result = ToolResult(
         content="",
-        tool_calls=[
-            ToolCall(id="call_1", name="search_web", arguments={"q": "sky color"})
-        ],
+        tool_calls=[ToolCall(id="call_1", name="search_web", arguments={"q": "sky color"})],
     )
     provider.complete_with_tools.return_value = result
     return provider

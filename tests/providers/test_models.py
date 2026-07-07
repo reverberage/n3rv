@@ -78,7 +78,7 @@ class TestProviderError:
 
 class TestQuotaExhaustedError:
     def test_is_provider_error(self) -> None:
-        err = QuotaExhaustedError("m", 429, 'code: AllocationQuota.FreeTierOnly')
+        err = QuotaExhaustedError("m", 429, "code: AllocationQuota.FreeTierOnly")
         assert isinstance(err, ProviderError)
         assert isinstance(err, RuntimeError)
         assert err.model_id == "m"

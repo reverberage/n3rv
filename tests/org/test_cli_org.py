@@ -13,6 +13,7 @@ def _strip_ansi(text: str) -> str:
     """Remove ANSI escape sequences from text."""
     return re.compile(r"\x1b\[[0-9;]*[a-zA-Z]").sub("", text)
 
+
 from n3rverberage.cli import app
 from n3rverberage.org import ORG_CONFIG_FILENAME, OrgConfig
 

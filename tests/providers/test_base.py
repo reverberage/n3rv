@@ -45,6 +45,7 @@ def test_full_implementation_succeeds() -> None:
 
         def complete_with_tools(self, messages, tools, **kwargs):
             from n3rverberage.providers.models import ToolResult
+
             return ToolResult(content="ok")
 
     provider = FullProvider()
@@ -71,6 +72,7 @@ def test_constructor_defaults() -> None:
 
         def complete_with_tools(self, messages, tools, **kwargs):
             from n3rverberage.providers.models import ToolResult
+
             return ToolResult(content="ok")
 
     p = MyProvider()

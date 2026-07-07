@@ -47,20 +47,14 @@ def get_provider(name: str | None = None) -> ModelProvider:
     # Parse colon-separated parts
     parts = resolved_name.split(":")
     if len(parts) > 2:
-        raise ValueError(
-            f"Invalid provider name: '{resolved_name}'. "
-            f"Format: <provider> or <provider>:<model>"
-        )
+        raise ValueError(f"Invalid provider name: '{resolved_name}'. Format: <provider> or <provider>:<model>")
 
     provider_name = parts[0]
     model_override = parts[1] if len(parts) == 2 else None
 
     # Validate provider exists
     if provider_name not in _PROVIDER_REGISTRY:
-        raise ValueError(
-            f"Unknown provider: '{provider_name}'. "
-            f"Available: {', '.join(list_providers())}"
-        )
+        raise ValueError(f"Unknown provider: '{provider_name}'. Available: {', '.join(list_providers())}")
 
     # Fallback is special: it doesn't accept model override
     if provider_name == "fallback":
@@ -95,8 +89,7 @@ def _build_fallback() -> FallbackProvider:
     raw = os.environ.get("N3RVERBERAGE_FALLBACK_PROVIDERS")
     if not raw or not raw.strip():
         raise ValueError(
-            "N3RVERBERAGE_FALLBACK_PROVIDERS is not set. "
-            "Set it to a comma-separated list of provider names."
+            "N3RVERBERAGE_FALLBACK_PROVIDERS is not set. Set it to a comma-separated list of provider names."
         )
     entries = [entry.strip() for entry in raw.split(",") if entry.strip()]
     providers = [get_provider(entry) for entry in entries]

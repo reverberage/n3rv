@@ -162,9 +162,8 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
                 if wf_content.returncode == 0:
                     try:
                         import base64
-                        content = base64.b64decode(
-                            json.loads(wf_content.stdout).get("content", "")
-                        ).decode()
+
+                        content = base64.b64decode(json.loads(wf_content.stdout).get("content", "")).decode()
                         import yaml as yaml_lib  # noqa: N812 — same yaml dep used elsewhere
 
                         parsed = yaml_lib.safe_load(content)
