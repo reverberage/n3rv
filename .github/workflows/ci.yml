@@ -2,7 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: ["main"]
+  push:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -34,4 +36,5 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - run: pip install ".[dev]"
+      - run: n3rverberage init
       - run: pytest -v

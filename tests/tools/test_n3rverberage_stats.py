@@ -21,7 +21,7 @@ class TestN3rvStatsTools:
 
     def test_exports_task_status(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "export const n3rverberage_task_status" in content
+        assert "export const n3rv_task_status" in content
 
     def test_exports_hub_health(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
@@ -29,7 +29,7 @@ class TestN3rvStatsTools:
 
     def test_exports_check_pending_tasks(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
-        assert "export const n3rverberage_check_pending_tasks" in content
+        assert "export const n3rv_check_pending_tasks" in content
 
     def test_hub_health_returns_false_on_failure(self) -> None:
         content = _tools_path().read_text(encoding="utf-8")
