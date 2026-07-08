@@ -72,6 +72,7 @@ FILE_MANIFEST = [
         False,
     ),
     ("opencode.json.j2", "opencode.json", False, False),
+    ("opencode.template.json.j2", "opencode.template.json", False, False),
     ("githooks/pre-push.py.j2", ".githooks/pre-push", False, True),
     # Docs
     ("CONTRIBUTING.md.j2", "CONTRIBUTING.md", False, False),

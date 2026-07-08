@@ -124,6 +124,7 @@ GITIGNORE_PATTERNS: list[str] = [
     ".githooks/",
     "AGENTS.md",
     "opencode.json",
+    "opencode.template.json",
 ]
 
 

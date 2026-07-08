@@ -46,6 +46,18 @@
       "default": false,
       "description": "True if the project has detected tools/build-systems."
     },
+    "model": {
+      "type": "string",
+      "required": false,
+      "default": "qwen3-coder-plus",
+      "description": "Default Qwen model ID for opencode (e.g. qwen3-coder-plus)."
+    },
+    "qwen_base_url": {
+      "type": "string",
+      "required": false,
+      "default": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+      "description": "Base URL for Qwen DashScope API."
+    },
     "profile_mcp_servers": {
       "type": "array",
       "required": false,

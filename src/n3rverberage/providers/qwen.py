@@ -17,10 +17,15 @@ from n3rverberage.providers.models import (
     ToolResult,
 )
 
-_DASHSCOPE_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+# NOTE: dashscope-intl.aliyuncs.com is deprecated but still works.
+# Alibaba recommends migrating to:
+#   https://{WorkspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1
+# Set via N3RVERBERAGE_QWEN_BASE_URL env var or the base_url constructor arg.
+_DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 _DEFAULT_MODEL = "qwen3-coder-plus"
 _TIMEOUT_SEC = 60.0
 _MAX_TOKENS = 4096
+_BASE_URL_ENV_VAR = "N3RVERBERAGE_QWEN_BASE_URL"
 
 
 class QwenProvider(ModelProvider):
@@ -36,7 +41,9 @@ class QwenProvider(ModelProvider):
         model: str | None = None,
         base_url: str | None = None,
     ) -> None:
-        super().__init__(api_key, model, base_url)
+        # Resolve base URL: explicit > env var > default
+        self._resolved_base_url = base_url or os.environ.get(_BASE_URL_ENV_VAR) or _DEFAULT_BASE_URL
+        super().__init__(api_key, model, self._resolved_base_url)
         resolved_key = self._api_key or os.environ.get("DASHSCOPE_API_KEY")
         if not resolved_key:
             raise ValueError(
@@ -53,7 +60,7 @@ class QwenProvider(ModelProvider):
         return _DEFAULT_MODEL
 
     def _default_base_url(self) -> str:
-        return _DASHSCOPE_BASE_URL
+        return self._resolved_base_url
 
     @property
     def last_quota_remaining(self) -> int | None:

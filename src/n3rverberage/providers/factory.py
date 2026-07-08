@@ -8,6 +8,7 @@ from typing import Any
 
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.fallback import FallbackProvider
+from n3rverberage.providers.tts import TTSProvider
 
 # Registry: name → fully-qualified class path
 _PROVIDER_REGISTRY: dict[str, str] = {
@@ -94,3 +95,21 @@ def _build_fallback() -> FallbackProvider:
     entries = [entry.strip() for entry in raw.split(",") if entry.strip()]
     providers = [get_provider(entry) for entry in entries]
     return FallbackProvider(providers)
+
+
+def get_tts_provider(
+    *,
+    model: str | None = None,
+    base_url: str | None = None,
+    voice: str | None = None,
+) -> TTSProvider:
+    """Build a TTSProvider from environment defaults.
+
+    Resolves the API key from ``DASHSCOPE_API_KEY`` and model/voice/URL
+    from their respective environment variables or default values.
+    """
+    return TTSProvider(
+        model=model,
+        base_url=base_url,
+        voice=voice,
+    )
