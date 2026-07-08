@@ -9,6 +9,7 @@ from typing import Any
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.fallback import FallbackProvider
 from n3rverberage.providers.tts import TTSProvider
+from n3rverberage.providers.tts_fallback import TTSFallbackProvider
 
 # Registry: name → fully-qualified class path
 _PROVIDER_REGISTRY: dict[str, str] = {
@@ -102,12 +103,42 @@ def get_tts_provider(
     model: str | None = None,
     base_url: str | None = None,
     voice: str | None = None,
-) -> TTSProvider:
-    """Build a TTSProvider from environment defaults.
+) -> TTSProvider | TTSFallbackProvider:
+    """Build a TTS provider from environment defaults.
+
+    Returns a single :class:`TTSProvider` by default. If the
+    ``N3RVERBERAGE_TTS_FALLBACK_MODELS`` environment variable is set, returns
+    a :class:`TTSFallbackProvider` that chains multiple TTS models.
+
+    The fallback list is a comma-separated list of model IDs::
+
+        N3RVERBERAGE_TTS_FALLBACK_MODELS=qwen3-tts-flash,qwen3-tts-instruct-flash
+
+    The first model in the list is the primary. Each subsequent model is a
+    fallback when the prior one's quota is exhausted.
 
     Resolves the API key from ``DASHSCOPE_API_KEY`` and model/voice/URL
     from their respective environment variables or default values.
     """
+    fallback_models = os.environ.get("N3RVERBERAGE_TTS_FALLBACK_MODELS", "").strip()
+
+    if fallback_models:
+        model_ids = [m.strip() for m in fallback_models.split(",") if m.strip()]
+        if not model_ids:
+            raise ValueError(
+                "N3RVERBERAGE_TTS_FALLBACK_MODELS is set but empty. "
+                "Set it to a comma-separated list of TTS model IDs."
+            )
+        providers = [
+            TTSProvider(
+                model=mid,
+                base_url=base_url,
+                voice=voice,
+            )
+            for mid in model_ids
+        ]
+        return TTSFallbackProvider(providers)
+
     return TTSProvider(
         model=model,
         base_url=base_url,

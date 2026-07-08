@@ -49,3 +49,12 @@ class AllProvidersExhaustedError(Exception):
         self.exhausted_model_ids = exhausted_model_ids
         models = ", ".join(exhausted_model_ids)
         super().__init__(f"All providers exhausted: {models}")
+
+
+class AllTTSProvidersExhaustedError(Exception):
+    """All TTS providers in a fallback chain were exhausted."""
+
+    def __init__(self, exhausted_model_ids: list[str]) -> None:
+        self.exhausted_model_ids = exhausted_model_ids
+        models = ", ".join(exhausted_model_ids)
+        super().__init__(f"All TTS providers exhausted: {models}")
