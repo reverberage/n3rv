@@ -9,10 +9,10 @@ from typing import Any
 import openai
 from pydantic import BaseModel
 
+from n3rverberage.config import DEFAULTS
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.models import ProviderError, ToolCall, ToolResult
 
-_DEFAULT_MODEL = "gpt-4"
 _MAX_TOKENS = 4096
 
 
@@ -42,10 +42,10 @@ class OpenAIProvider(ModelProvider):
         )
 
     def _default_model(self) -> str:
-        return _DEFAULT_MODEL
+        return os.environ.get("N3RVERBERAGE_DEFAULT_MODEL") or "gpt-4"
 
     def _default_base_url(self) -> str:
-        return "https://api.openai.com/v1"
+        return os.environ.get("N3RVERBERAGE_DEFAULT_BASE_URL") or "https://api.openai.com/v1"
 
     def complete(self, messages: list[dict], **kwargs: Any) -> str:
         max_tokens = kwargs.pop("max_tokens", _MAX_TOKENS)

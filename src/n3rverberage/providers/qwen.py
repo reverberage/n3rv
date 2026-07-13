@@ -9,6 +9,7 @@ from typing import Any
 import openai
 from pydantic import BaseModel
 
+from n3rverberage.config import DEFAULTS
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.models import (
     ProviderError,
@@ -24,8 +25,6 @@ from n3rverberage.providers.models import (
 #
 # IPv6: dashscope-intl.aliyuncs.com has NO AAAA records.
 # IPv6-only environments must use the workspace-specific domain or an IPv4 proxy.
-_DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
-_DEFAULT_MODEL = "qwen3-coder-plus"
 _TIMEOUT_SEC = 60.0
 _MAX_TOKENS = 4096
 _BASE_URL_ENV_VAR = "N3RVERBERAGE_QWEN_BASE_URL"
@@ -44,9 +43,7 @@ class QwenProvider(ModelProvider):
         model: str | None = None,
         base_url: str | None = None,
     ) -> None:
-        # Resolve base URL: explicit > env var > default
-        self._resolved_base_url = base_url or os.environ.get(_BASE_URL_ENV_VAR) or _DEFAULT_BASE_URL
-        super().__init__(api_key, model, self._resolved_base_url)
+        super().__init__(api_key, model, base_url)
         resolved_key = self._api_key or os.environ.get("DASHSCOPE_API_KEY")
         if not resolved_key:
             raise ValueError(
@@ -60,10 +57,14 @@ class QwenProvider(ModelProvider):
         self._last_quota_remaining: int | None = None
 
     def _default_model(self) -> str:
-        return _DEFAULT_MODEL
+        return os.environ.get("N3RVERBERAGE_DEFAULT_MODEL") or DEFAULTS.model
 
     def _default_base_url(self) -> str:
-        return self._resolved_base_url
+        return (
+            os.environ.get(_BASE_URL_ENV_VAR)
+            or os.environ.get("N3RVERBERAGE_DEFAULT_BASE_URL")
+            or DEFAULTS.base_url
+        )
 
     @property
     def last_quota_remaining(self) -> int | None:

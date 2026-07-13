@@ -6,6 +6,7 @@ import importlib
 import os
 from typing import Any
 
+from n3rverberage.config import DEFAULTS
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.fallback import FallbackProvider
 from n3rverberage.providers.tts import TTSProvider
@@ -44,7 +45,7 @@ def get_provider(name: str | None = None) -> ModelProvider:
     ``"nonexistent"``      ``ValueError`` — unknown provider
     =====================  ================================================
     """
-    resolved_name = (name or os.environ.get("N3RVERBERAGE_PROVIDER") or "qwen").strip().lower()
+    resolved_name = (name or os.environ.get("N3RVERBERAGE_PROVIDER") or DEFAULTS.provider).strip().lower()
 
     # Parse colon-separated parts
     parts = resolved_name.split(":")

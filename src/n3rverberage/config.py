@@ -1,11 +1,52 @@
 from __future__ import annotations
 
+import os
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from n3rverberage.platform import project_relative_path, resolve_project_root
+
+
+# ---------------------------------------------------------------------------
+# Provider defaults — env-var-driven, used by factory.py and all providers
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ProviderDefaults:
+    """Default provider settings resolved from environment variables.
+
+    These are the **global** defaults applied when no provider-specific env
+    var or constructor argument is set.  Each provider's own ``_default_model``
+    / ``_default_base_url`` method checks these first, so setting a global
+    env var overrides per-provider defaults *for all providers*.
+    """
+
+    provider: str
+    model: str
+    base_url: str
+
+    @classmethod
+    def from_env(cls) -> "ProviderDefaults":
+        return cls(
+            provider=os.environ.get("N3RVERBERAGE_PROVIDER", "qwen"),
+            model=os.environ.get(
+                "N3RVERBERAGE_DEFAULT_MODEL",
+                "qwen3-coder-plus",
+            ),
+            base_url=os.environ.get(
+                "N3RVERBERAGE_DEFAULT_BASE_URL",
+                "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+            ),
+        )
+
+
+# Module-level singleton — evaluated once at import time.
+# Tests can patch os.environ before import to control values.
+DEFAULTS = ProviderDefaults.from_env()
 
 
 class RuntimePaths(BaseModel):

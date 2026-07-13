@@ -9,11 +9,11 @@ from typing import Any
 import openai
 from pydantic import BaseModel
 
+from n3rverberage.config import DEFAULTS
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.models import ProviderError, ToolCall, ToolResult
 
 _DEFAULT_BASE_URL = "http://127.0.0.1:11434/v1"
-_DEFAULT_MODEL = "qwen2.5"
 _MAX_TOKENS = 4096
 
 
@@ -30,9 +30,7 @@ class LocalProvider(ModelProvider):
         model: str | None = None,
         base_url: str | None = None,
     ) -> None:
-        # Resolve before super().__init__ so _default_base_url() reads env
-        self._resolved_base_url = base_url or os.environ.get("N3RVERBERAGE_LOCAL_BASE_URL") or _DEFAULT_BASE_URL
-        super().__init__(api_key, model, self._resolved_base_url)
+        super().__init__(api_key, model, base_url)
         self._client = openai.OpenAI(
             api_key=self._api_key or "not-needed",
             base_url=self.base_url,
@@ -40,10 +38,10 @@ class LocalProvider(ModelProvider):
         )
 
     def _default_model(self) -> str:
-        return _DEFAULT_MODEL
+        return os.environ.get("N3RVERBERAGE_DEFAULT_MODEL") or "qwen2.5"
 
     def _default_base_url(self) -> str:
-        return self._resolved_base_url
+        return os.environ.get("N3RVERBERAGE_DEFAULT_BASE_URL") or _DEFAULT_BASE_URL
 
     def complete(self, messages: list[dict], **kwargs: Any) -> str:
         max_tokens = kwargs.pop("max_tokens", _MAX_TOKENS)
