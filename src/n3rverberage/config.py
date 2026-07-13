@@ -9,7 +9,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from n3rverberage.platform import project_relative_path, resolve_project_root
 
-
 # ---------------------------------------------------------------------------
 # Provider defaults — env-var-driven, used by factory.py and all providers
 # ---------------------------------------------------------------------------
@@ -30,7 +29,7 @@ class ProviderDefaults:
     base_url: str
 
     @classmethod
-    def from_env(cls) -> "ProviderDefaults":
+    def from_env(cls) -> ProviderDefaults:
         return cls(
             provider=os.environ.get("N3RVERBERAGE_PROVIDER", "qwen"),
             model=os.environ.get(

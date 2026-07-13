@@ -9,7 +9,6 @@ from typing import Any
 import openai
 from pydantic import BaseModel
 
-from n3rverberage.config import DEFAULTS
 from n3rverberage.providers.base import ModelProvider
 from n3rverberage.providers.models import ProviderError, ToolCall, ToolResult
 

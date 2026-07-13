@@ -60,11 +60,7 @@ class QwenProvider(ModelProvider):
         return os.environ.get("N3RVERBERAGE_DEFAULT_MODEL") or DEFAULTS.model
 
     def _default_base_url(self) -> str:
-        return (
-            os.environ.get(_BASE_URL_ENV_VAR)
-            or os.environ.get("N3RVERBERAGE_DEFAULT_BASE_URL")
-            or DEFAULTS.base_url
-        )
+        return os.environ.get(_BASE_URL_ENV_VAR) or os.environ.get("N3RVERBERAGE_DEFAULT_BASE_URL") or DEFAULTS.base_url
 
     @property
     def last_quota_remaining(self) -> int | None:
