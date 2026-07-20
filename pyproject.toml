@@ -1,6 +1,6 @@
 [project]
 name = "n3rverberage"
-version = "0.1.0"
+version = "0.1.1"
 description = "Invisible engineering infrastructure for opencode agents — reverberage fork."
 readme = "README.md"
 license = { text = "Apache-2.0" }

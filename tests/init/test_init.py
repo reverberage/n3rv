@@ -164,20 +164,14 @@ class TestInit:
         pkg_content = package_json.read_text(encoding="utf-8")
         assert "@opencode-ai/plugin" in pkg_content
 
-    def test_docs_scaffolded_on_init(self, tmp_path: Path) -> None:
+    def test_docs_not_scaffolded_on_init(self, tmp_path: Path) -> None:
         _write_fastapi_pyproject(tmp_path)
         run_init(tmp_path, project_name=None, stack_override=None, force=True)
 
         contributing = tmp_path / "CONTRIBUTING.md"
         security = tmp_path / "SECURITY.md"
-        assert contributing.is_file(), f"Missing {contributing}"
-        assert security.is_file(), f"Missing {security}"
-
-        contrib_content = contributing.read_text(encoding="utf-8")
-        assert "AGENTS.md" in contrib_content
-
-        sec_content = security.read_text(encoding="utf-8")
-        assert "trusted local environment" in sec_content or "127.0.0.1" in sec_content
+        assert not contributing.is_file(), f"CONTRIBUTING.md should not be generated: {contributing}"
+        assert not security.is_file(), f"SECURITY.md should not be generated: {security}"
 
     def test_opencode_json_has_new_keys(self, tmp_path: Path) -> None:
         _write_fastapi_pyproject(tmp_path)

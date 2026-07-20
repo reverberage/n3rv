@@ -74,9 +74,6 @@ FILE_MANIFEST = [
     ("opencode.json.j2", "opencode.json", False, False),
     ("opencode.template.json.j2", "opencode.template.json", False, False),
     ("githooks/pre-push.py.j2", ".githooks/pre-push", False, True),
-    # Docs
-    ("CONTRIBUTING.md.j2", "CONTRIBUTING.md", False, False),
-    ("SECURITY.md.j2", "SECURITY.md", False, False),
     # Plugins
     (
         "opencode/plugins/n3rverberage-lifecycle.js.j2",
@@ -253,6 +250,19 @@ FILE_MANIFEST = [
     ),
     # N3RVERBERAGE primary agent (user-facing entry point)
     ("opencode/agents/n3rverberage.md.j2", ".opencode/agents/n3rverberage.md", False, False),
+    # Project board management
+    (
+        "opencode/agents/project-ops.md.j2",
+        ".opencode/agents/project-ops.md",
+        False,
+        False,
+    ),
+    (
+        "opencode/skills/project-board/SKILL.md.j2",
+        ".opencode/skills/project-board/SKILL.md",
+        False,
+        False,
+    ),
 ]
 
 
