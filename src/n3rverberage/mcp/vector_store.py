@@ -1,4 +1,12 @@
-"""ChromaDB vector store for semantic memory persistence."""
+"""ChromaDB vector store for semantic memory persistence.
+
+CVE-2026-45829 (PYSEC-2026-311): ChromaDB <=1.5.9 has a pre-auth RCE via
+the HTTP server (/api/v2/tenants/{tenant}/databases/{db}/collections with
+trust_remote_code=true). NOT exploitable here: we use PersistentClient
+(local on-disk) exclusively — no HTTP server, no user-supplied
+tenant/database/collection, no trust_remote_code. Bump when a fixed
+release ships (none exists as of 1.5.9).
+"""
 
 from __future__ import annotations
 
@@ -33,7 +41,7 @@ class _SimpleHashEmbeddingFunction(EmbeddingFunction):
         for text in input:
             vec = [0.0] * _SIMPLE_HASH_DIM
             for i, ch in enumerate(text[:2048]):
-                digest = int(hashlib.md5(f"{i}:{ch}".encode()).hexdigest(), 16)
+                digest = int(hashlib.md5(f"{i}:{ch}".encode(), usedforsecurity=False).hexdigest(), 16)
                 vec[digest % _SIMPLE_HASH_DIM] += 1.0
             norm = math.sqrt(sum(x * x for x in vec)) or 1.0
             embeddings.append([x / norm for x in vec])

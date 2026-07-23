@@ -21,7 +21,7 @@ _UNIVERSAL_SERVERS: list[MCPServerInfo] = [
         name="github",
         type="local",
         command=["npx", "-y", "@github/github-mcp-server"],
-        environment={"GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"},
+        environment={"GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"},  # nosec — template variable, not a secret
         description="GitHub integration (repos, issues, PRs)",
     ),
     MCPServerInfo(

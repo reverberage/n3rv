@@ -14,6 +14,7 @@ from jinja2 import (
     StrictUndefined,
     TemplateNotFound,
     UndefinedError,
+    select_autoescape,
 )
 
 logger = logging.getLogger("n3rverberage.renderer")
@@ -135,7 +136,7 @@ class TemplateEngine:
         loader = ChoiceLoader(loaders) if len(loaders) > 1 else loaders[0]
         self.env = Environment(
             loader=loader,
-            autoescape=False,
+            autoescape=select_autoescape(default_for_string=False, default=False),
             undefined=StrictUndefined,
         )
         self._schema = _load_schema(templates_dir)

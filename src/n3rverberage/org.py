@@ -174,9 +174,9 @@ def protect_repo(repo_url: str, dry_run: bool = False) -> bool:
                             check_name = job_def.get("name", job_id)
                             checks.append({"context": f"{wf_name} / {check_name}", "app_id": 15368})
                     except Exception:
-                        pass
+                        logger.debug("Failed to parse workflow %s", wf_name, exc_info=True)
         except Exception:
-            pass
+            logger.debug("Failed to load workflows for %s", api_base, exc_info=True)
 
     if not checks:
         # No CI found — still protect with PR reviews

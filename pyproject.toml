@@ -24,6 +24,11 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp>=3.13.5",
+    # CVE-2026-45829 (PYSEC-2026-311): pre-auth RCE in ChromaDB HTTP server
+    # via /api/v2/tenants/{tenant}/databases/{db}/collections with
+    # trust_remote_code=true. NOT exploitable here: n3rverberage uses
+    # PersistentClient (local on-disk) exclusively — no HTTP server, no
+    # trust_remote_code. Bump when a fixed release ships (none as of 1.5.9).
     "chromadb>=1.5.9",
     "onnxruntime>=1.26.0",
     "httpx>=0.28.1",

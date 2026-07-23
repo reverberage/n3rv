@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
 from n3rverberage.init.context import Stack
+
+logger = logging.getLogger("n3rverberage.init.detector")
 
 
 @dataclass
@@ -71,7 +74,7 @@ def _extract_from_pyproject(path: Path) -> str | None:
         if "tool" in data and "poetry" in data["tool"] and "name" in data["tool"]["poetry"]:
             return data["tool"]["poetry"]["name"]
     except Exception:
-        pass
+        logger.debug("Failed to parse pyproject.toml: %s", path, exc_info=True)
     return None
 
 
@@ -85,7 +88,7 @@ def _extract_from_package_json(path: Path) -> str | None:
                 name = name.split("/", 1)[1]
             return name
     except Exception:
-        pass
+        logger.debug("Failed to parse package.json: %s", path, exc_info=True)
     return None
 
 
@@ -97,5 +100,5 @@ def _extract_from_go_mod(path: Path) -> str | None:
             module_path = match.group(1).strip()
             return module_path.split("/")[-1]
     except Exception:
-        pass
+        logger.debug("Failed to parse go.mod: %s", path, exc_info=True)
     return None

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import re
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
@@ -11,6 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from n3rverberage.config import RuntimeSettings
 from n3rverberage.models.a2a import TaskState
+
+logger = logging.getLogger("n3rverberage.a2a.state")
 
 _TASK_ID_RE = re.compile(r"^task-[a-f0-9]{32}$")
 
@@ -156,6 +159,7 @@ class HubStateStore:
                 task = HubTaskRecord.model_validate_json(task_file.read_text(encoding="utf-8"))
                 tasks.append(task)
             except Exception:
+                logger.exception("Failed to load task: %s", task_file)
                 continue
         return tasks
 
