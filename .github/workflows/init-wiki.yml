@@ -1,12 +1,17 @@
 name: Init Wiki
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      pat:
+        description: "Personal Access Token with repo scope"
+        required: true
 jobs:
   init-wiki:
     runs-on: ubuntu-latest
     steps:
       - name: Init wiki
         env:
-          GH_TOKEN: ${{ github.token }}
+          WIKI_TOKEN: ${{ inputs.pat }}
         run: |
           set -euxo pipefail
           repo="${{ github.repository }}"
@@ -20,5 +25,6 @@ jobs:
           echo "" > _Footer.md
           git add .
           git commit -m "Initial wiki"
-          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${repo}.wiki.git"
-          git push --set-upstream origin main 2>&1 || echo "EXIT: $?"
+          git remote add origin "https://juanmanueldaza:${WIKI_TOKEN}@github.com/${repo}.wiki.git"
+          git push --set-upstream origin main 2>&1
+          echo "SUCCESS"
