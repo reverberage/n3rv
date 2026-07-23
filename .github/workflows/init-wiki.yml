@@ -1,0 +1,42 @@
+name: Init Wiki
+on: workflow_dispatch
+jobs:
+  init-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init wiki
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          tmp="$(mktemp -d)"
+          cd "$tmp"
+          git init -b main
+          git config user.email "bot@reverberage.github.com"
+          git config user.name "reverberage bot"
+          cat > Home.md << 'EOF'
+# n3rverberage
+
+**Engine for the reverberage ecosystem.**
+
+Provider abstraction, memory persistence, A2A task routing, daemon management, and config generation.
+
+## License
+
+Apache-2.0
+EOF
+          echo "* [Home](Home)" > _Sidebar.md
+          echo "" > _Footer.md
+          git add .
+          git commit -m "Initial wiki"
+          url="https://x-access-token:${GH_TOKEN}@github.com/${repo}.wiki.git"
+          git remote add origin "$url"
+          git push --set-upstream origin main || \
+            git push --set-upstream origin master || \
+            (echo "First attempt failed, trying with init fetch..." && \
+             git fetch origin && git push --set-upstream origin main)
+          echo "Wiki init result: $?"
